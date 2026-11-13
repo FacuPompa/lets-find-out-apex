@@ -1,6 +1,6 @@
-# Let's Find Out! — Oracle APEX
+# Let's Find Out! - Oracle APEX
 
-Aplicación privada para Bri y Facu, en desarrollo con Oracle APEX 26.1 y Oracle Autonomous Database. Este repositorio contiene la especificación, el modelo de datos, pruebas SQL y la exportación APEXlang de desarrollo.
+Aplicación en desarrollo con Oracle APEX 26.1 y Oracle Autonomous Database. Este repositorio contiene la especificación, el modelo de datos, pruebas SQL y la exportación APEXlang de desarrollo.
 
 El alta de metas de cultivo ya fue probada. Las pantallas de sesiones y progreso, y los permisos individuales, siguen pendientes. El proyecto todavía no está listo para uso real.
 
