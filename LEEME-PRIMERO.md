@@ -43,7 +43,7 @@ Facu pidió empezar por crear una actividad con nombre, tiempo mínimo y veces p
 - `db/checks/001_cultivo.sql`: prueba con savepoint y rollback de sus propios datos. Comprueba progreso inicial, sesiones de 29/30/90 minutos con mínimo 30, varias sesiones el mismo día, minutos inválidos, límites de semana, exceso de objetivo y separación entre metas. **Pasó** tras la corrección de cuota confirmada por Facu y verificada mediante MCP. El primer intento había fallado con `ORA-01950`.
 - La prueba SQL revierte sus datos; conservar la meta real de Facu creada desde APEX (ID 3).
 - Existe la aplicación 100 y su exportación APEXlang (`mmdVersion: 26.1.0+3102`). La página de alta de metas fue probada; faltan sesiones y progreso.
-- Se inicializó Git local en `main` y se configuró `origin` para el repositorio indicado por Facu; GitHub Actions aún no se ejecutó.
+- Git está inicializado en `main` y conectado a `origin`. El primer commit `fba800e` se subió a GitHub y la ejecución de GitHub Actions `43369234347` terminó correctamente el 13/11/2026.
 
 ### Cuota resuelta y siguiente paso guiado
 

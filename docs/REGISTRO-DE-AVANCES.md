@@ -21,3 +21,5 @@ Facu probó el alta desde el navegador y recibió `row created`; SQLcl confirmó
 Se repitió con éxito la prueba SQL de Cultivo y se documentaron los pasos existentes y pendientes en `PRUEBAS-CULTIVO.md`. Se corrigió la estructura del plan de pantallas para que pase el control local de documentación. Pendientes: cuenta de Bri, autorización por persona, sesiones y progreso, tratamiento seguro del checksum de la exportación, repositorio y ejecución real de GitHub Actions.
 
 Preparada una exportación versionable que omite el checksum de sesión de desarrollo, con respaldo privado fuera del proyecto y una comprobación local para evitar incorporar ese valor literal. Pendiente definir cómo suministrarlo al importar; ver `README.md`.
+
+Primer commit `fba800e` subido a GitHub. La ejecución `43369234347` de GitHub Actions finalizó correctamente; comprueba documentación y patrones básicos de archivos sensibles, no la base de datos ni la interfaz APEX.
