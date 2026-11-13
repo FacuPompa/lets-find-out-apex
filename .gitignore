@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+*.wallet
+Wallet_*.zip
+wallet/
+.wallet/
+*.p12
+*.sso
+*.jks
+*.key
+__pycache__/
