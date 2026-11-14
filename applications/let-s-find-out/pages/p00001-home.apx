@@ -52,6 +52,10 @@ page 1 (
                 const button = event.target.closest('button[data-accion]');
                 if (!button) return;
                 const action = button.dataset.accion;
+                if (action === 'PREPARAR_CULTIVO') {
+                  apex.page.submit({ request: 'PREPARAR_CULTIVO', showWait: true });
+                  return;
+                }
                 if (action === 'REGISTRAR') sessionStorage.setItem('lfo-preguntar-reinicio', button.dataset.categoria);
                 apex.page.submit({ request: 'CRONOMETRO', set: { P1_CATEGORIA: button.dataset.categoria, P1_ACCION: action, P1_REINICIAR: 'N' }, showWait: true });
               });
@@ -99,9 +103,14 @@ page 1 (
                         else
                             v_html := v_html || '<button type="button" class="t-Button" data-accion="INICIAR" data-categoria="' || r.codigo || '">Iniciar</button>';
                         end if;
-                        v_html := v_html || '<button type="button" class="t-Button" data-accion="REGISTRAR" data-categoria="' || r.codigo || '">Registrar tiempo</button></div></section>';
+                        if r.codigo = 'CULTIVO' then
+                            v_html := v_html || '<button type="button" class="t-Button" data-accion="PREPARAR_CULTIVO" data-categoria="CULTIVO">Registrar tiempo</button>';
+                        else
+                            v_html := v_html || '<button type="button" class="t-Button" data-accion="REGISTRAR" data-categoria="' || r.codigo || '">Registrar tiempo</button>';
+                        end if;
+                        v_html := v_html || '</div></section>';
                     end loop;
-                    return v_html || '</div><p>Por ahora el tiempo de Cultivo se guarda por separado y todavía no actualiza las metas.</p>';
+                    return v_html || '</div>';
                 end;
                 ```
         }
@@ -163,7 +172,7 @@ page 1 (
         source {
             plsqlCode:
                 ```plsql
-                lfo_cronometros.operar(:P1_ACCION, :P1_CATEGORIA, :P1_REINICIAR);
+                lfo_cultivo_nuevo.operar_reloj(:P1_ACCION, :P1_CATEGORIA, :P1_REINICIAR);
                 ```
         }
         execution {
@@ -176,6 +185,57 @@ page 1 (
         }
         successMessage {
             successMessage: Cronómetro actualizado.
+        }
+    )
+    process pausar-cultivo-para-registrar (
+        name: Pausar Cultivo para registrar
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    v_persona varchar2(4) := lfo_persona_actual;
+                    v_dummy varchar2(4);
+                    v_activos number;
+                begin
+                    begin
+                        insert into lfo_reloj_persona(persona) values (v_persona);
+                    exception when dup_val_on_index then null;
+                    end;
+                    select persona into v_dummy from lfo_reloj_persona where persona = v_persona for update;
+                    select count(*) into v_activos from lfo_relojes
+                    where persona = v_persona and categoria = 'CULTIVO' and activo_desde is not null;
+                    if v_activos > 0 then
+                        lfo_cronometros.pausar('CULTIVO');
+                    end if;
+                end;
+                ```
+        }
+        execution {
+            sequence: 20
+            point: processing
+        }
+        serverSideCondition {
+            type: request=Value
+            value: PREPARAR_CULTIVO
+        }
+    )
+    branch elegir-cultivo (
+        name: Elegir actividad de Cultivo
+        execution {
+            sequence: 5
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 9
+                clearCache: 9
+            }
+        }
+        serverSideCondition {
+            type: request=Value
+            value: PREPARAR_CULTIVO
         }
     )
     branch volver-inicio (

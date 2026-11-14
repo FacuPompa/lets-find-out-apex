@@ -14,7 +14,7 @@ La semana se elige una vez y se comparte entre las pantallas de cada cuenta; cad
 
 - [x] La base permite guardar una meta con persona, semana, nombre, minutos mínimos y repeticiones positivas.
 - [x] Una sesión guarda la meta, el día lógico elegido y los minutos; el día debe pertenecer a la semana de la meta.
-- [x] Una sesión igual o superior al mínimo cuenta una vez; una inferior se conserva sin contar. No se acumulan sesiones ni se divide una sesión larga.
+- [x] El cálculo histórico cuenta como máximo un cumplimiento por sesión y conserva sin contar las inferiores al mínimo. Los registros nuevos usan la acumulación descrita más abajo.
 - [x] El progreso conserva el número real de cumplimientos y limita el porcentaje mostrado a 100 %.
 - [ ] Crear metas, registrar sesiones y consultar progreso desde pantallas APEX.
 - [ ] Vincular las metas a cuentas autenticadas y verificar permisos por persona.
@@ -42,3 +42,8 @@ Aplicación 100 verificada con SQLcl en `LETS_FIND_OUT_DEV` y exportada a `../..
 ## Vinculación de cuentas (importada a desarrollo)
 
 La asignación administrativa vincula una cuenta APEX con un código de persona estable; puede actualizarse si cambia el nombre de usuario. La persona se determina en el servidor y no se elige al crear la meta. La selección y el registro de sesiones se limitan a metas de esa persona, incluso ante un identificador modificado en la solicitud. Una cuenta sin asignación no puede crear metas ni registrar sesiones. El progreso compartido continúa visible. Las dos cuentas de uso fueron creadas y vinculadas. La aplicación fue importada a desarrollo; quedan pendientes las pruebas de extremo a extremo y de acceso indebido con dos cuentas reales.
+
+
+## Integración acumulativa
+
+La migración `010_cultivo_acumulado.sql` agrega registros vinculados sin modificar los anteriores. Las sesiones manuales nuevas y los intervalos nuevos del cronómetro se acumulan por actividad; se contabilizan múltiplos del mínimo hasta alcanzar la meta y el tiempo excedente posterior se conserva para el registro de horas, pero no se recupera para cumplimientos futuros. La vista nueva preserva los resultados de las sesiones anteriores. La elección y escritura comprueban la cuenta y la semana del día personal; el tiempo sin día o de otra semana no se asigna automáticamente. La prueba SQL `012_cultivo_acumulado.sql` pasó con rollback y la aplicación se importó a desarrollo. Se confirmaron en navegador la acumulación y la pausa; falta la prueba visual del aviso cercano.

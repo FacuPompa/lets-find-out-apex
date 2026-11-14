@@ -1,0 +1,165 @@
+page 9 (
+    name: Registrar tiempo de Cultivo
+    alias: REGISTRAR-CRONOMETRO-CULTIVO
+    title: Registrar tiempo de Cultivo
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    javaScript {
+        executeWhenPageLoads:
+            ```javascript
+            (() => {
+              sessionStorage.removeItem('lfo-preguntar-reinicio');
+              const button = document.getElementById('lfo-guardar-cultivo');
+              const submit = () => {
+                sessionStorage.setItem('lfo-preguntar-reinicio', 'CULTIVO');
+                apex.page.submit({ request: 'GUARDAR', showWait: true });
+              };
+              button.addEventListener('click', () => {
+                if (!apex.item('P9_META').getValue()) {
+                  apex.message.alert('Elegí una actividad para registrar el tiempo.');
+                  return;
+                }
+                button.disabled = true;
+                apex.server.process('AVISO_CULTIVO', { pageItems: '#P9_META' }, { dataType: 'json' })
+                  .done((result) => {
+                    if (Number(result.minutos) > 0) {
+                      apex.message.confirm('Te faltan aproximadamente ' + result.minutos + ' minutos para otro cumplimiento. ¿Querés registrar ahora?', (confirmar) => {
+                        if (confirmar) submit(); else button.disabled = false;
+                      }, { confirmLabel: 'Registrar ahora', cancelLabel: 'Volver' });
+                    } else {
+                      submit();
+                    }
+                  })
+                  .fail(() => {
+                    button.disabled = false;
+                    apex.message.alert('No pudimos revisar el tiempo. Verificá que la actividad y el día correspondan a la semana seleccionada.');
+                  });
+              });
+            })();
+            ```
+    }
+    region actividad (
+        name: Elegí la actividad
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>El cronómetro de Cultivo está pausado. Elegí una actividad de la semana seleccionada; se guardará únicamente el tiempo nuevo.</p>
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P9_META (
+        type: selectList
+        label {
+            label: Actividad
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select nombre || ' | mínimo ' || minutos_minimos || ' min' as d, id as r
+                from lfo_metas_cultivo
+                where persona = lfo_persona_actual
+                  and semana_inicio = to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD')
+                order by nombre, id
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una actividad
+        }
+        layout {
+            sequence: 10
+            region: @actividad
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    button guardar (
+        buttonName: GUARDAR
+        label: Registrar tiempo
+        layout {
+            sequence: 20
+            region: @actividad
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            action: definedByDynamicAction
+        }
+        advanced {
+            htmlDomId: lfo-guardar-cultivo
+        }
+    )
+    process aviso-cultivo (
+        name: AVISO_CULTIVO
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                apex_json.open_object;
+                apex_json.write('minutos', lfo_cultivo_nuevo.aviso_minutos(to_number(:P9_META)));
+                apex_json.close_object;
+                ```
+        }
+        execution {
+            sequence: 5
+            point: ajaxCallback
+        }
+    )
+    process guardar-tiempo (
+        name: Registrar tiempo de Cultivo
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_cultivo_nuevo.registrar_cronometro(to_number(:P9_META));
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @guardar
+        }
+        successMessage {
+            successMessage: Tiempo de Cultivo registrado.
+        }
+    )
+    branch volver (
+        name: Volver al inicio
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 1
+                clearCache: 1
+            }
+        }
+    )
+)
