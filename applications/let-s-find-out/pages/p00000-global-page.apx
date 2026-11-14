@@ -1,3 +1,28 @@
 page 0 (
     name: Global Page
+
+    region semana-actual (
+        name: Semana seleccionada
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                begin
+                    return '<p>Semana seleccionada desde el lunes ' || apex_escape.html(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD'))) || '. Para cambiarla, abrí Registrar cultivo.</p>';
+                end;
+                ```
+        }
+        layout {
+            sequence: 1
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        serverSideCondition {
+            type: expression
+            plsqlExpression: :APP_PAGE_ID != 3 and apex_authentication.is_authenticated
+        }
+    )
 )

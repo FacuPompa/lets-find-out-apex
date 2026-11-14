@@ -96,4 +96,69 @@ list navigation-menu (
         }
     )
 
+    entry colores (
+        label: Colores de cronómetros
+        layout {
+            sequence: 50
+        }
+        link {
+            target: {
+                page: 6
+                clearCache: 6
+            }
+        }
+    )
+
+    entry objetivos-horas (
+        label: Mis objetivos de horas
+        layout {
+            sequence: 60
+        }
+        link {
+            target: {
+                page: 7
+                clearCache: 7
+            }
+        }
+    )
+
+    entry progreso-semanal (
+        label: Progreso semanal
+        layout {
+            sequence: 70
+        }
+        link {
+            target: {
+                page: 8
+                clearCache: 8
+            }
+        }
+    )
+
+    entry cierre-diario (
+        label: Cierre del día
+        layout {
+            sequence: 40
+        }
+        link {
+            target: {
+                page: 5
+                clearCache: 5
+            }
+        }
+    )
+
+    entry registrar-cultivo (
+        label: Registrar cultivo
+        layout {
+            sequence: 30
+        }
+        link {
+            target: {
+                page: 3
+                clearCache: 3
+            }
+        }
+    )
+
 )

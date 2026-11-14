@@ -1,0 +1,189 @@
+page 5 (
+    name: Cierre del día
+    alias: CIERRE-DIARIO
+    title: Cierre del día
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    region resumen (
+        name: Resumen del día
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                    v_persona varchar2(4) := lfo_persona_actual;
+                    v_html clob;
+                    v_fecha date;
+                    v_pendientes number;
+                    v_anteriores number;
+                    v_segundos number;
+                begin
+                    select count(*) into v_anteriores from lfo_reloj_tramos
+                    where persona = v_persona and dia_id is null;
+                    if (:P5_DIA is null) then
+                        v_html := '<p>No tenés un día abierto. Se abrirá cuando inicies un cronómetro.</p>';
+                    else
+                        select fecha_logica into v_fecha from lfo_dias_personales
+                        where id = :P5_DIA and persona = v_persona and cerrado_en is null;
+                        v_html := '<p>Día: <strong>' || to_char(v_fecha, 'DD/MM/YYYY') || '</strong>. Este resumen incluye solo el tiempo que ya registraste.</p>' ||
+                            '<div class="t-Report"><div class="t-Report-wrap" style="overflow-x:auto"><table class="t-Report-report" style="width:100%"><thead><tr><th scope="col">Categoría</th><th scope="col">Tiempo registrado</th></tr></thead><tbody>';
+                        for r in (
+                            select c.etiqueta, nvl(r.segundos, 0) segundos
+                            from (select 'TRABAJO' categoria, 'Trabajo' etiqueta, 1 orden from dual union all
+                                  select 'ESTUDIO', 'Estudio', 2 from dual union all
+                                  select 'OCIO', 'Ocio', 3 from dual union all
+                                  select 'CULTIVO', 'Cultivo', 4 from dual) c
+                            left join lfo_resumen_dia_v r on r.dia_id = :P5_DIA and r.persona = v_persona and r.categoria = c.categoria
+                            order by c.orden
+                        ) loop
+                            v_segundos := floor(r.segundos);
+                            v_html := v_html || '<tr><td>' || apex_escape.html(r.etiqueta) || '</td><td>' || to_char(floor(v_segundos / 3600), 'FM999999990') || ' h ' || to_char(floor(mod(v_segundos, 3600) / 60), 'FM00') || ' min ' || to_char(mod(v_segundos, 60), 'FM00') || ' s</td></tr>';
+                        end loop;
+                        v_html := v_html || '</tbody></table></div></div>';
+                        select count(*) into v_pendientes from lfo_reloj_tramos
+                        where persona = v_persona and dia_id = :P5_DIA
+                        and (fin is null or registrado_hasta < fin);
+                        if v_pendientes > 0 then
+                            v_html := v_html || '<p>Tenés tiempo sin registrar. Si cerrás el día, quedará pendiente y no se incluye en este resumen.</p>';
+                        end if;
+                    end if;
+                    if v_anteriores > 0 then
+                        v_html := v_html || '<p>Hay intervalos anteriores que todavía no tienen un día asignado y no aparecen en este resumen.</p>';
+                    end if;
+                    return v_html;
+                end;
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P5_DIA (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @resumen
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P5_ACTIVO (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @resumen
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P5_MENSAJE (
+        type: hidden
+        layout {
+            sequence: 30
+            region: @resumen
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    button cerrar (
+        buttonName: CERRAR
+        label: Cerrar mi día
+        layout {
+            sequence: 40
+            region: @resumen
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            requiresConfirmation: true
+        }
+        confirmation {
+            message: &P5_MENSAJE.
+        }
+        serverSideCondition {
+            type: itemIsNotNull
+            item: P5_DIA
+        }
+    )
+    process cargar-dia (
+        name: Preparar cierre
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    v_persona varchar2(4) := lfo_persona_actual;
+                    v_nombre varchar2(20);
+                begin
+                    select max(id) into :P5_DIA from lfo_dias_personales
+                    where persona = v_persona and cerrado_en is null;
+                    select max(categoria) into :P5_ACTIVO from lfo_relojes
+                    where persona = v_persona and activo_desde is not null;
+                    v_nombre := case :P5_ACTIVO when 'TRABAJO' then 'Trabajo' when 'ESTUDIO' then 'Estudio' when 'OCIO' then 'Ocio' when 'CULTIVO' then 'Cultivo' end;
+                    :P5_MENSAJE := case when v_nombre is not null
+                        then 'El cronómetro de ' || v_nombre || ' está funcionando y se pausará. El tiempo sin registrar quedará pendiente. ¿Querés cerrar tu día?'
+                        else '¿Querés cerrar tu día? El tiempo sin registrar quedará pendiente.' end;
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+    )
+    process cerrar-dia (
+        name: Cerrar día
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_cierre_diario.cerrar(:P5_DIA, :P5_ACTIVO);
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @cerrar
+        }
+        successMessage {
+            successMessage: Día cerrado. El tiempo sin registrar quedó pendiente.
+        }
+    )
+    branch volver (
+        name: Volver al cierre
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 5
+                clearCache: 5
+            }
+        }
+    )
+)

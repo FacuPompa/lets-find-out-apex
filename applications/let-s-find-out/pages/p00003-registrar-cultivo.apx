@@ -1,0 +1,277 @@
+page 3 (
+    name: Registrar cultivo
+    alias: REGISTRAR-CULTIVO
+    title: Registrar cultivo
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    css {
+        inline:
+            ```css
+            .lfo-progreso-scroll { overflow-x: auto; }
+            .lfo-progreso-scroll table { width: 100%; min-width: 720px; }
+            .lfo-progreso-scroll .t-Report-report th,
+            .lfo-progreso-scroll .t-Report-report td { padding: 12px 20px; }
+            ```
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    region semana (
+        name: Semana de trabajo
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>Elegí cualquier día de la semana. La selección se guarda para tu cuenta.</p>
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+            columnSpan: 12
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P3_SEMANA (
+        type: datePicker
+        label {
+            label: Día de la semana
+        }
+        layout {
+            sequence: 10
+            region: @semana
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+            formatMask: YYYY-MM-DD
+        }
+        default {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                return nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD'));
+                ```
+        }
+    )
+    button elegir-semana (
+        buttonName: ELEGIR_SEMANA
+        label: Usar esta semana
+        layout {
+            sequence: 20
+            region: @semana
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+        }
+        behavior {
+            executeValidations: false
+        }
+    )
+    process guardar-semana (
+        name: Guardar semana seleccionada
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    semana_elegida varchar2(10);
+                begin
+                    select to_char(trunc(to_date(:P3_SEMANA, 'FXYYYY-MM-DD'), 'IW'), 'YYYY-MM-DD')
+                    into semana_elegida from dual where :P3_SEMANA is not null;
+                    apex_util.set_preference(
+                        p_preference => 'LFO_SEMANA',
+                        p_value => semana_elegida,
+                        p_user => :APP_USER
+                    );
+                exception when no_data_found then
+                    raise_application_error(-20016, 'Elegí un día para seleccionar la semana.');
+                end;
+                ```
+        }
+        execution {
+            sequence: 5
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @elegir-semana
+        }
+        successMessage {
+            successMessage: Semana seleccionada.
+        }
+    )
+    region sesion (
+        name: Registrar sesión
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P3_META (
+        type: selectList
+        label {
+            label: Meta
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select persona || ' - ' || nombre || ' - ' || to_char(semana_inicio, 'YYYY-MM-DD') as d, id as r
+                from lfo_metas_cultivo
+                where persona = lfo_persona_actual
+                and semana_inicio = to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD')
+                order by semana_inicio desc, persona, nombre, id
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una meta
+        }
+        layout {
+            sequence: 10
+            region: @sesion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    pageItem P3_DIA (
+        type: datePicker
+        label {
+            label: Día lógico
+        }
+        layout {
+            sequence: 20
+            region: @sesion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+            formatMask: YYYY-MM-DD
+        }
+        validation {
+            valueRequired: true
+        }
+        default {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                return to_char(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'YYYY-MM-DD');
+                ```
+        }
+    )
+    pageItem P3_MINUTOS (
+        type: numberField
+        label {
+            label: Minutos
+        }
+        layout {
+            sequence: 30
+            region: @sesion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    button guardar (
+        buttonName: GUARDAR
+        label: Guardar sesión
+        layout {
+            sequence: 40
+            region: @sesion
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+    )
+    process guardar-sesion (
+        name: Guardar sesión
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    meta_seleccionada lfo_metas_cultivo.id%type;
+                begin
+                    select id into meta_seleccionada from lfo_metas_cultivo
+                    where id = to_number(:P3_META)
+                    and persona = lfo_persona_actual
+                    and semana_inicio = to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD');
+                    lfo_registrar_sesion(meta_seleccionada, to_date(:P3_DIA, 'YYYY-MM-DD'), to_number(:P3_MINUTOS));
+                exception when no_data_found then
+                    raise_application_error(-20015, 'La meta no está disponible para tu cuenta y semana seleccionada.');
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @guardar
+        }
+        successMessage {
+            successMessage: Sesión registrada.
+        }
+    )
+    branch volver (
+        name: Volver al progreso
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 3
+                clearCache: 3
+            }
+        }
+    )
+    region progreso (
+        name: Progreso de cultivo
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                    resultado clob := '<div class="t-Report"><div class="t-Report-wrap lfo-progreso-scroll"><table class="t-Report-report"><thead><tr><th scope="col">Persona</th><th scope="col">Actividad</th><th scope="col">Semana</th><th scope="col">Cumplidas</th><th scope="col">Objetivo</th><th scope="col">Faltan</th></tr></thead><tbody>';
+                begin
+                    for meta in (select persona, semana_inicio, nombre, cumplimientos, veces_por_semana, faltantes from lfo_progreso_cultivo_v where semana_inicio = to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD') order by persona, nombre, id) loop
+                        null; resultado := resultado || '<tr><td>' || apex_escape.html(meta.persona) || '</td><td>' || apex_escape.html(meta.nombre) || '</td><td>' || to_char(meta.semana_inicio, 'DD/MM/YYYY') || '</td><td>' || meta.cumplimientos || '</td><td>' || meta.veces_por_semana || '</td><td>' || meta.faltantes || '</td></tr>';
+                    end loop;
+                    return resultado || '</tbody></table></div></div>';
+                end;
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+)

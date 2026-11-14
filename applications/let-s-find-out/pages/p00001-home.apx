@@ -1,7 +1,7 @@
 page 1 (
-    name: Home
+    name: Inicio
     alias: HOME
-    title: Let's Find Out!
+    title: Inicio - Let's Find Out!
     appearance {
         pageTemplate: @/standard
         templateOptions: #DEFAULT#
@@ -10,24 +10,186 @@ page 1 (
         cursorFocus: doNotFocusCursor
     }
     security {
+        authentication: required
         pageAccessProtection: argumentsMustHaveChecksum
         formAutoComplete: false
     }
-
-    region let-s-find-out (
-        name: Let's Find Out!
-        type: staticContent
+    css {
+        inline:
+            ```css
+            .lfo-relojes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 16px; }
+            .lfo-reloj { border: 1px solid var(--ut-component-border-color, #d7d7d7); border-top: 4px solid var(--reloj-color); padding: 16px; border-radius: 6px; }
+            .lfo-reloj h3 { margin: 0 0 8px; font-size: 1.1rem; }
+            .lfo-reloj output { display: block; font-variant-numeric: tabular-nums; font-size: 1.8rem; margin-bottom: 12px; }
+            .lfo-reloj-acciones { display: flex; flex-wrap: wrap; gap: 8px; }
+            ```
+    }
+    javaScript {
+        executeWhenPageLoads:
+            ```javascript
+            (() => {
+              const clocks = document.querySelectorAll('.lfo-reloj');
+              const loaded = Date.now();
+              const pending = sessionStorage.getItem('lfo-preguntar-reinicio');
+              sessionStorage.removeItem('lfo-preguntar-reinicio');
+              if (pending && document.querySelector('.t-Alert--success')) {
+                apex.message.confirm('Tiempo registrado. ¿Querés reiniciar el contador?', (reiniciar) => {
+                  if (reiniciar) {
+                    apex.page.submit({ request: 'CRONOMETRO', set: { P1_CATEGORIA: pending, P1_ACCION: 'REINICIAR', P1_REINICIAR: 'N' }, showWait: true });
+                  }
+                }, { confirmLabel: 'Sí, reiniciar', cancelLabel: 'No, conservar' });
+              }
+              const render = () => clocks.forEach((clock) => {
+                const elapsed = Math.floor(Number(clock.dataset.seconds) + (clock.dataset.active === 'S' ? (Date.now() - loaded) / 1000 : 0));
+                const hours = Math.floor(elapsed / 3600);
+                const minutes = Math.floor(elapsed / 60) % 60;
+                const seconds = elapsed % 60;
+                clock.querySelector('output').textContent = [hours, minutes, seconds].map((n) => String(n).padStart(2, '0')).join(':');
+              });
+              render();
+              window.setInterval(render, 1000);
+              document.querySelector('.lfo-relojes').addEventListener('click', (event) => {
+                const button = event.target.closest('button[data-accion]');
+                if (!button) return;
+                const action = button.dataset.accion;
+                if (action === 'REGISTRAR') sessionStorage.setItem('lfo-preguntar-reinicio', button.dataset.categoria);
+                apex.page.submit({ request: 'CRONOMETRO', set: { P1_CATEGORIA: button.dataset.categoria, P1_ACCION: action, P1_REINICIAR: 'N' }, showWait: true });
+              });
+            })();
+            ```
+    }
+    region cronometros (
+        name: Tus cronómetros
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                    v_persona varchar2(4) := lfo_persona_actual;
+                    v_html clob := '<p>Bienvenido/a. Elegí una actividad para empezar. Podés pausar y registrar el tiempo cuando quieras.</p><div class="lfo-relojes">';
+                    v_segundos number;
+                    v_intervalo interval day(9) to second(6);
+                    v_activo varchar2(1);
+                    v_color varchar2(20);
+                begin
+                    for r in (
+                        select c.codigo, c.etiqueta, c.color, nvl(r.acumulado_seg, 0) acumulado_seg, r.activo_desde
+                        from (
+                            select 'TRABAJO' codigo, 'Trabajo' etiqueta, '#3b6da8' color, 1 orden from dual union all
+                            select 'ESTUDIO', 'Estudio', '#7860a5', 2 from dual union all
+                            select 'OCIO', 'Ocio', '#b57428', 3 from dual union all
+                            select 'CULTIVO', 'Cultivo', '#4d8355', 4 from dual
+                        ) c left join lfo_relojes r on r.persona = v_persona and r.categoria = c.codigo
+                        order by c.orden
+                    ) loop
+                        v_color := apex_util.get_preference('LFO_COLOR_' || r.codigo, :APP_USER);
+                        if v_color is null or not regexp_like(v_color, '^#[0-9A-Fa-f]{6}$', 'c') then
+                            v_color := r.color;
+                        end if;
+                        v_segundos := r.acumulado_seg;
+                        v_activo := 'N';
+                        if r.activo_desde is not null then
+                            v_intervalo := systimestamp - r.activo_desde;
+                            v_segundos := v_segundos + extract(day from v_intervalo)*86400 + extract(hour from v_intervalo)*3600 + extract(minute from v_intervalo)*60 + extract(second from v_intervalo);
+                            v_activo := 'S';
+                        end if;
+                        v_html := v_html || '<section class="lfo-reloj" style="--reloj-color:' || v_color || '" data-seconds="' || to_char(floor(v_segundos), 'FM9999999990') || '" data-active="' || v_activo || '"><h3>' || apex_escape.html(r.etiqueta) || '</h3><output aria-label="Tiempo transcurrido">00:00:00</output><div class="lfo-reloj-acciones">';
+                        if v_activo = 'S' then
+                            v_html := v_html || '<button type="button" class="t-Button" data-accion="PAUSAR" data-categoria="' || r.codigo || '">Pausar</button>';
+                        else
+                            v_html := v_html || '<button type="button" class="t-Button" data-accion="INICIAR" data-categoria="' || r.codigo || '">Iniciar</button>';
+                        end if;
+                        v_html := v_html || '<button type="button" class="t-Button" data-accion="REGISTRAR" data-categoria="' || r.codigo || '">Registrar tiempo</button></div></section>';
+                    end loop;
+                    return v_html || '</div><p>Por ahora el tiempo de Cultivo se guarda por separado y todavía no actualiza las metas.</p>';
+                end;
+                ```
+        }
         layout {
             sequence: 10
-            slot: breadcrumbBar
+            slot: body
+            columnSpan: 12
         }
         appearance {
-            template: @/hero
+            template: @/standard
             templateOptions: #DEFAULT#
         }
-        image {
-            fileUrl: #APP_FILES#icons/app-icon-512.png
+    )
+    pageItem P1_CATEGORIA (
+        type: hidden
+        settings {
+            valueProtected: false
+        }
+        layout {
+            sequence: 10
+            region: @cronometros
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: unrestricted
         }
     )
-
+    pageItem P1_ACCION (
+        type: hidden
+        settings {
+            valueProtected: false
+        }
+        layout {
+            sequence: 20
+            region: @cronometros
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: unrestricted
+        }
+    )
+    pageItem P1_REINICIAR (
+        type: hidden
+        settings {
+            valueProtected: false
+        }
+        layout {
+            sequence: 30
+            region: @cronometros
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: unrestricted
+        }
+    )
+    process operar-cronometro (
+        name: Operar cronómetro
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_cronometros.operar(:P1_ACCION, :P1_CATEGORIA, :P1_REINICIAR);
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            type: request=Value
+            value: CRONOMETRO
+        }
+        successMessage {
+            successMessage: Cronómetro actualizado.
+        }
+    )
+    branch volver-inicio (
+        name: Volver al inicio
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 1
+                clearCache: 1
+            }
+        }
+    )
 )

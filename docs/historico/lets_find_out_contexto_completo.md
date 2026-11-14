@@ -20,8 +20,8 @@ El nombre está inspirado en el programa ficticio de *BoJack Horseman*:
 
 **Participantes actuales:**
 
-- Bri
-- Facu
+- Persona B
+- Persona A
 
 ---
 
@@ -41,7 +41,7 @@ La competencia no busca premiar simplemente a quien acumula más horas. Cada per
 
 La lógica es:
 
-1. Cada semana, Bri y Facu definen objetivos.
+1. Cada semana, Persona B y Persona A definen objetivos.
 2. Durante el día registran actividades.
 3. La app calcula progreso, faltantes y excedentes.
 4. Al final de la semana se calculan puntos.
@@ -52,7 +52,7 @@ La lógica es:
 
 ## 3. Problema original
 
-Bri y Facu tienden a procrastinar tareas importantes.
+Persona B y Persona A tienden a procrastinar tareas importantes.
 
 La primera idea fue medir tiempo de:
 
@@ -111,7 +111,7 @@ Las reglas pueden ajustarse, sobre todo en semanas de prueba, pero no conviene m
 
 Actividades que hacen avanzar directamente un proyecto o producen un resultado concreto.
 
-### Bri
+### Persona B
 
 - Dar clases de Pilates.
 - Preparar clases.
@@ -126,7 +126,7 @@ Actividades que hacen avanzar directamente un proyecto o producen un resultado c
 - Enviar mails.
 - Organizar proyectos concretos.
 
-### Facu
+### Persona A
 
 - Programar.
 - Desarrollar funcionalidades.
@@ -145,7 +145,7 @@ Actividades que hacen avanzar directamente un proyecto o producen un resultado c
 
 Actividades cuyo objetivo principal es aprender.
 
-### Bri
+### Persona B
 
 - Leer libros tomando apuntes.
 - Hacer cursos.
@@ -153,7 +153,7 @@ Actividades cuyo objetivo principal es aprender.
 - Investigar temas todavía no ligados a una pieza concreta.
 - Hacer seminarios.
 
-### Facu
+### Persona A
 
 - Hacer cursos de programación.
 - Aprender lenguajes.
@@ -183,10 +183,10 @@ Ejemplos:
 
 ### Actividades compartidas
 
-Si Bri y Facu ven algo o juegan juntos durante dos horas:
+Si Persona B y Persona A ven algo o juegan juntos durante dos horas:
 
-- Bri suma 2 horas.
-- Facu suma 2 horas.
+- Persona B suma 2 horas.
+- Persona A suma 2 horas.
 
 No se divide el tiempo.
 
@@ -273,7 +273,7 @@ Cada persona define:
 - meta total semanal;
 - distribución por áreas.
 
-### Ejemplo real de Bri
+### Ejemplo real de Persona B
 
 | Área | Objetivo |
 |---|---:|
@@ -404,7 +404,7 @@ Campos:
 
 ### Registrar para ambos
 
-Debe existir una opción para crear el mismo registro para Bri y Facu.
+Debe existir una opción para crear el mismo registro para Persona B y Persona A.
 
 ---
 
@@ -490,14 +490,14 @@ Cultivo no cuenta actualmente como día activo, salvo futura decisión.
 
 Las misiones son resultados concretos.
 
-### Ejemplos de Bri
+### Ejemplos de Persona B
 
 - Publicar mínimo 3 cosas.
 - Hacer 3 horas netas de edición del vlog 00.
 - Avanzar una investigación al menos 4 horas.
 - Editar fotos y videos del casamiento y subirlos al grupo.
 
-### Ejemplos de Facu
+### Ejemplos de Persona A
 
 - Caminar hasta Ediro.
 - Entender Codex.
@@ -580,8 +580,8 @@ Momento oficial de “Let’s Find Out!”.
 
 Debe mostrar:
 
-- puntaje de Bri;
-- puntaje de Facu;
+- puntaje de Persona B;
+- puntaje de Persona A;
 - ganador;
 - Trabajo;
 - Estudio;
@@ -734,8 +734,8 @@ Texto:
 - Duelo de Pareja
 - ¿Quién hizo más cosas? ¿Hicieron cosas? ¿Qué hicieron?
 - Let’s Find Out!
-- BRI
-- FACU
+- Persona B
+- Persona A
 - START
 
 ---
@@ -744,8 +744,8 @@ Texto:
 
 Dos tarjetas:
 
-- Bri.
-- Facu.
+- Persona B.
+- Persona A.
 
 Cada una con:
 
@@ -864,7 +864,7 @@ No construir un gestor de proyectos enorme.
 
 ## 27. MVP
 
-1. Perfiles Bri y Facu.
+1. Perfiles Persona B y Persona A.
 2. Objetivos semanales.
 3. Cronómetro.
 4. Registro manual.
@@ -1125,7 +1125,7 @@ function leisurePoints(balanceMinutes: number): number {
 
 ---
 
-## 33. Ejemplo real de semana actual de Bri
+## 33. Ejemplo real de semana actual de Persona B
 
 Objetivos:
 
@@ -1274,7 +1274,7 @@ El enemigo es la procrastinación, no la otra persona.
 9. Cómo puntuar misiones variables.
 10. Si se modifican misiones a mitad de semana.
 11. Si habrá resumen automático.
-12. Si será solo para Bri y Facu.
+12. Si será solo para Persona B y Persona A.
 13. Tipo de login.
 14. Stack técnico.
 15. Base de datos.
@@ -1316,7 +1316,7 @@ Funciones experimentales.
 
 ## 39. Resumen ejecutivo para Codex
 
-Construir una app web compartida para Bri y Facu que gamifica objetivos semanales.
+Construir una app web compartida para Persona B y Persona A que gamifica objetivos semanales.
 
 Debe:
 
