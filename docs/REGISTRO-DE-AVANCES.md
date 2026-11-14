@@ -162,3 +162,13 @@ Se preparó una integración aditiva para asociar el tiempo nuevo del cronómetr
 Se confirmó en navegador que dos sesiones cortas acumulan un cumplimiento. Se detectó que el cronómetro seguía activo al elegir la actividad; se implementó una pausa al pulsar «Registrar tiempo». Una prueba con sesión temporal y rollback verificó la pausa y la repetición con el reloj ya pausado; la validación live de APEX pasó, se importó a desarrollo con autorización y se confirmó el proceso instalado. Falta comprobarlo desde el navegador.
 
 Se comprobó en navegador que el cronómetro se pausa al comenzar el registro. El aviso de cercanía a otro cumplimiento sigue pendiente de comprobación visual.
+
+### 14/11/2026 — Reinicio de cronómetros
+
+Se instaló en desarrollo un procedimiento que pausa y reinicia un cronómetro, conservando las cargas registradas y la evidencia del tiempo pendiente descartado. La prueba SQL con rollback comprobó el descarte, la conservación de las cargas y el reinicio repetido. El botón con confirmación pasó la validación live de APEX, se importó con autorización y se comprobó el proceso instalado; falta la prueba en navegador.
+
+### 14/11/2026 — Plan y metas semanales
+
+Se desglosaron los pendientes conocidos en un plan revisable. Se instaló una base aditiva de metas semanales por persona y semana; una prueba SQL con rollback verificó el puntaje proporcional, el rechazo de cambios ajenos y la protección ante cambios de semana. La pantalla de alta y cambio de estado pasó la validación live, se importó con autorización y se comprobó que sus procesos y el reinicio de cronómetros siguen instalados. Falta probar en navegador; sigue abierta la regla para semanas sin metas.
+
+Se confirmó en navegador el funcionamiento del reinicio y de las metas semanales. Se informó un aviso de confirmación o salida con aspecto genérico del navegador; falta identificar el recorrido exacto para corregirlo.

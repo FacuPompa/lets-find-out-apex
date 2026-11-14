@@ -15,8 +15,13 @@ Actualizado: 14/11/2026. El detalle de las reglas está en las especificaciones 
 - La exportación versionada omite el `checksumSalt`. El respaldo de desarrollo está fuera del repositorio. Seguir `docs/IMPORTACION-APEX.md`; no publicar valores privados, wallets ni contraseñas.
 
 - Integración de Cultivo: `010_cultivo_acumulado.sql` está instalado en desarrollo y pasó la prueba `012_cultivo_acumulado.sql`. La selección de actividad y el aviso cuando faltan hasta diez minutos para otro cumplimiento desde el segundo se importaron a la aplicación 100. Se comprobó en navegador la acumulación y la pausa al pulsar «Registrar tiempo»; falta probar visualmente el aviso.
+- Reinicio de cronómetros: se instaló en desarrollo `011_reiniciar_cronometro.sql`, pasó `013_reiniciar_cronometro.sql` y se comprobó en navegador. El reinicio descarta el tiempo pendiente, registra ese descarte y conserva las cargas ya guardadas.
+- Metas semanales: se instaló `012_metas_semanales.sql`, pasó `014_metas_semanales.sql` y se comprobó en navegador el alta y cambio de estado con puntaje proporcional. Sin metas no se muestra puntaje, hasta acordar esa regla.
+- Confirmaciones: se informó que aparece un aviso con aspecto genérico del navegador. Está pendiente identificar el texto y el recorrido concreto antes de corregirlo.
 
 ## Próximos pasos
+
+El detalle de tareas conocidas está en `docs/PLAN-DE-TRABAJO.md`; es una lista revisable y no una estimación de duración.
 
 1. Probar objetivos, progreso y autorización entre las dos cuentas desde las pantallas.
 2. Probar en navegador el aviso cercano a otro cumplimiento de Cultivo.
