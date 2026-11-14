@@ -6,6 +6,14 @@ page 9999 (
         pageTemplate: @/login
         templateOptions: #DEFAULT#
     }
+    css {
+        inline:
+            ```css
+            .t-Login-logo {
+                --ut-login-logo-size: 6rem;
+            }
+            ```
+    }
     navigation {
         warnOnUnsavedChanges: false
     }
@@ -27,7 +35,7 @@ page 9999 (
             templateOptions: #DEFAULT#
         }
         image {
-            fileUrl: #APP_FILES#icons/app-icon-512.png
+            fileUrl: #APP_FILES#lfo-logo.jpg
         }
     )
 

@@ -1,7 +1,8 @@
 app LET-S-FIND-OUT (
     name: Let's Find Out!
     logo {
-        type: text
+        type: imageAndText
+        imageUrl: #APP_FILES#lfo-logo.jpg
         text: Let's Find Out!
     }
     navigation {
@@ -30,6 +31,10 @@ app LET-S-FIND-OUT (
         currentTheme: @universal-theme
         globalPage: 0
         addBuiltWithApexToFooter: false
+    }
+    globalization {
+        primaryLanguage: es-ar
+        languageDerivedFrom: appPrimaryLanguage
     }
     appFormatMasks {
         date: DS

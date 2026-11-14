@@ -1,0 +1,75 @@
+page 8 (
+    name: Progreso semanal
+    alias: PROGRESO-SEMANAL
+    title: Progreso semanal
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    css {
+        inline:
+            ```css
+            .lfo-tabla-semanal { overflow-x: auto; }
+            .lfo-tabla-semanal table { width: 100%; min-width: 620px; }
+            .lfo-tabla-semanal th, .lfo-tabla-semanal td { padding: 12px 20px; }
+            ```
+    }
+    region progreso (
+        name: Progreso de la semana
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                    v_semana date := to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD');
+                    v_hoy date := cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date);
+                    v_html clob := '<p>Semana: <strong>' || to_char(v_semana, 'DD/MM/YYYY') || ' al ' || to_char(v_semana + 6, 'DD/MM/YYYY') || '</strong> | Hoy: ' || to_char(v_hoy, 'DD/MM/YYYY') || '</p>';
+                    v_faltan number;
+                    function duracion(p_segundos number) return varchar2 is
+                      v_segundos number := floor(greatest(nvl(p_segundos,0),0));
+                    begin
+                      return to_char(floor(v_segundos/3600),'FM999999990') || ' h ' || to_char(floor(mod(v_segundos,3600)/60),'FM00') || ' min ' || to_char(mod(v_segundos,60),'FM00') || ' s';
+                    end;
+                begin
+                    for persona in (select distinct persona from lfo_cuentas_persona order by persona) loop
+                        v_html := v_html || '<h3>' || apex_escape.html(persona.persona) || '</h3><div class="t-Report lfo-tabla-semanal"><table class="t-Report-report"><thead><tr><th scope="col">Categoría</th><th scope="col">Registrado</th><th scope="col">Objetivo</th><th scope="col">Hasta el objetivo</th></tr></thead><tbody>';
+                        for r in (
+                            select c.etiqueta, p.segundos, p.horas_objetivo
+                            from (select 'TRABAJO' categoria, 'Trabajo' etiqueta, 1 orden from dual union all
+                                  select 'ESTUDIO', 'Estudio', 2 from dual union all
+                                  select 'OCIO', 'Ocio', 3 from dual union all
+                                  select 'CULTIVO', 'Cultivo', 4 from dual) c
+                            left join lfo_progreso_horas_v p on p.persona = persona.persona and p.semana_inicio = v_semana and p.categoria = c.categoria
+                            order by c.orden
+                        ) loop
+                            v_html := v_html || '<tr><td>' || apex_escape.html(r.etiqueta) || '</td><td>' || duracion(r.segundos) || '</td>';
+                            if r.horas_objetivo is null then
+                                v_html := v_html || '<td>Sin objetivo</td><td>—</td>';
+                            else
+                                v_faltan := greatest(0, r.horas_objetivo * 3600 - nvl(r.segundos, 0));
+                                v_html := v_html || '<td>' || apex_escape.html(to_char(r.horas_objetivo, 'TM9')) || ' h</td><td>' || duracion(v_faltan) || '</td>';
+                            end if;
+                            v_html := v_html || '</tr>';
+                        end loop;
+                        v_html := v_html || '</tbody></table></div>';
+                    end loop;
+                    return v_html || '<p>Se muestra el tiempo registrado con cronómetros y asociado a un día personal. No incluye intervalos anteriores sin día asignado ni sesiones manuales de Cultivo. Los puntos todavía no están calculados.</p>';
+                end;
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+            columnSpan: 12
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+)

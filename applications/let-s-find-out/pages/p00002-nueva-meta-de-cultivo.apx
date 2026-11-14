@@ -140,61 +140,39 @@ page 2 (
     )
 
     pageItem P2_PERSONA (
-        type: selectList
-        label {
-            label: Persona
-            alignment: left
-        }
-        lov {
-            type: staticValues
-            staticValues: STATIC:Bri;BRI,Facu;FACU
-        }
+        type: hidden
         layout {
             sequence: 20
             region: @nueva-meta-de-cultivo
             slot: regionBody
-            alignment: left
-        }
-        appearance {
-            template: @/required-floating
-            templateOptions: #DEFAULT#
-            height: 1
-        }
-        validation {
-            valueRequired: true
         }
         source {
             formRegion: @nueva-meta-de-cultivo
             column: PERSONA
             dataType: varchar2
         }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
     )
 
     pageItem P2_SEMANA_INICIO (
-        type: datePicker
-        label {
-            label: Semana - lunes
-            alignment: left
-        }
+        type: hidden
         layout {
             sequence: 30
             region: @nueva-meta-de-cultivo
             slot: regionBody
-            alignment: left
         }
         appearance {
-            template: @/required-floating
-            templateOptions: #DEFAULT#
-            width: 32
-        }
-        validation {
-            valueRequired: true
-            maxLength: 255
+            formatMask: YYYY-MM-DD
         }
         source {
             formRegion: @nueva-meta-de-cultivo
             column: SEMANA_INICIO
             dataType: date
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
         }
     )
 
@@ -270,57 +248,6 @@ page 2 (
         }
     )
 
-    button delete (
-        buttonName: DELETE
-        label: Delete
-        layout {
-            sequence: 20
-            region: @nueva-meta-de-cultivo
-            slot: delete
-        }
-        appearance {
-            buttonTemplate: @/text
-            templateOptions: #DEFAULT#
-        }
-        behavior {
-            executeValidations: false
-            warnOnUnsavedChanges: doNotCheck
-            databaseAction: delete
-            requiresConfirmation: true
-        }
-        confirmation {
-            message: &APP_TEXT$DELETE_MSG!RAW.
-            style: danger
-        }
-        serverSideCondition {
-            type: itemIsNotNull
-            item: P2_ID
-        }
-    )
-
-    button save (
-        buttonName: SAVE
-        label: Apply Changes
-        layout {
-            sequence: 30
-            region: @nueva-meta-de-cultivo
-            slot: change
-        }
-        appearance {
-            buttonTemplate: @/text
-            hot: true
-            templateOptions: #DEFAULT#
-        }
-        behavior {
-            warnOnUnsavedChanges: doNotCheck
-            databaseAction: update
-        }
-        serverSideCondition {
-            type: itemIsNotNull
-            item: P2_ID
-        }
-    )
-
     process initialize-form-nueva-meta-de-cultivo (
         name: Initialize form Nueva meta de cultivo
         type: formInitialization
@@ -334,12 +261,47 @@ page 2 (
         }
     )
 
+    process cargar-semana (
+        name: Cargar semana seleccionada
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                :P2_PERSONA := lfo_persona_actual;
+                :P2_SEMANA_INICIO := nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD'));
+                ```
+        }
+        execution {
+            sequence: 20
+            point: beforeHeader
+        }
+    )
+
+    process asegurar-semana (
+        name: Asegurar semana seleccionada
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                :P2_PERSONA := lfo_persona_actual;
+                :P2_SEMANA_INICIO := nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD'));
+                ```
+        }
+        execution {
+            sequence: 1
+            point: afterSubmit
+        }
+    )
+
     process process-form-nueva-meta-de-cultivo (
         name: Process form Nueva meta de cultivo
         type: formAutoRowProcessing
         formRegion: @nueva-meta-de-cultivo
         execution {
             sequence: 10
+        }
+        serverSideCondition {
+            whenButtonPressed: @create
         }
         advanced {
             executionMappingIdentifier: 9565442526871104

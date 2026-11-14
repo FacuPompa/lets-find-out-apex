@@ -1,0 +1,207 @@
+page 6 (
+    name: Colores de cronómetros
+    alias: COLORES
+    title: Colores de cronómetros
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    region colores (
+        name: Elegí tus colores
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>Elegí un color para cada cronómetro. La selección se guarda para tu cuenta.</p>
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P6_TRABAJO (
+        type: colorPicker
+        settings {
+            useDefaults: false
+            displayAs: colorOnlyPopup
+        }
+        label {
+            label: Trabajo
+            alignment: left
+        }
+        layout {
+            sequence: 10
+            region: @colores
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+        default {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                return nvl(apex_util.get_preference('LFO_COLOR_TRABAJO', :APP_USER), '#3b6da8');
+                ```
+        }
+    )
+    pageItem P6_ESTUDIO (
+        type: colorPicker
+        settings {
+            useDefaults: false
+            displayAs: colorOnlyPopup
+        }
+        label {
+            label: Estudio
+            alignment: left
+        }
+        layout {
+            sequence: 20
+            region: @colores
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+        default {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                return nvl(apex_util.get_preference('LFO_COLOR_ESTUDIO', :APP_USER), '#7860a5');
+                ```
+        }
+    )
+    pageItem P6_OCIO (
+        type: colorPicker
+        settings {
+            useDefaults: false
+            displayAs: colorOnlyPopup
+        }
+        label {
+            label: Ocio
+            alignment: left
+        }
+        layout {
+            sequence: 30
+            region: @colores
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+        default {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                return nvl(apex_util.get_preference('LFO_COLOR_OCIO', :APP_USER), '#b57428');
+                ```
+        }
+    )
+    pageItem P6_CULTIVO (
+        type: colorPicker
+        settings {
+            useDefaults: false
+            displayAs: colorOnlyPopup
+        }
+        label {
+            label: Cultivo
+            alignment: left
+        }
+        layout {
+            sequence: 40
+            region: @colores
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+        default {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                return nvl(apex_util.get_preference('LFO_COLOR_CULTIVO', :APP_USER), '#4d8355');
+                ```
+        }
+    )
+    button guardar (
+        buttonName: GUARDAR
+        label: Guardar colores
+        layout {
+            sequence: 50
+            region: @colores
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+    )
+    process guardar-colores (
+        name: Guardar colores
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                begin
+                    if (:P6_TRABAJO is null) or (:P6_ESTUDIO is null) or (:P6_OCIO is null) or (:P6_CULTIVO is null) or
+                       not regexp_like(:P6_TRABAJO, '^#[0-9A-Fa-f]{6}$', 'c') or
+                       not regexp_like(:P6_ESTUDIO, '^#[0-9A-Fa-f]{6}$', 'c') or
+                       not regexp_like(:P6_OCIO, '^#[0-9A-Fa-f]{6}$', 'c') or
+                       not regexp_like(:P6_CULTIVO, '^#[0-9A-Fa-f]{6}$', 'c') then
+                        raise_application_error(-20150, 'Elegí un color válido para cada cronómetro.');
+                    end if;
+                    apex_util.set_preference('LFO_COLOR_TRABAJO', :P6_TRABAJO, :APP_USER);
+                    apex_util.set_preference('LFO_COLOR_ESTUDIO', :P6_ESTUDIO, :APP_USER);
+                    apex_util.set_preference('LFO_COLOR_OCIO', :P6_OCIO, :APP_USER);
+                    apex_util.set_preference('LFO_COLOR_CULTIVO', :P6_CULTIVO, :APP_USER);
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @guardar
+        }
+        successMessage {
+            successMessage: Colores guardados.
+        }
+    )
+    branch volver (
+        name: Volver al inicio
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 1
+                clearCache: 1
+            }
+        }
+    )
+)

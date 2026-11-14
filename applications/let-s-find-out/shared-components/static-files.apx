@@ -22,3 +22,7 @@ file "icons/app-icon-512.png" (
     mimeType: image/png
     charSet: utf-8
 )
+
+file "lfo-logo.jpg" (
+    mimeType: image/jpeg
+)

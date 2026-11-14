@@ -1,6 +1,6 @@
 # Let's Find Out! — Plan de arranque v1
 
-**Estado:** base acordada el 31 de julio de 2026; actualizada con Facu el 11 de noviembre de 2026.
+**Estado:** base acordada el 31 de julio de 2026; actualizada con Persona A el 11 de noviembre de 2026.
 **Lectura:** este archivo describe el producto previsto en el proyecto anterior. Consultar `../../LEEME-PRIMERO.md` y las especificaciones actuales para saber qué está vigente e implementado hoy.
 
 **Propósito:** convertir el sistema actual de seguimiento en una web-app privada, compartida y agradable de usar a diario. Este documento es la fuente de verdad para arrancar diseño y desarrollo; el Notion original queda como referencia histórica y de ideas.
@@ -9,7 +9,7 @@
 
 ## 1. Qué se va a construir
 
-Una **web-app privada para Bri y Facu**, usable desde celular y computadora, que permite registrar tiempo, sesiones y metas semanales; muestra el progreso del duelo durante la semana; y calcula el cierre semanal y mensual.
+Una **web-app privada para Persona B y Persona A**, usable desde celular y computadora, que permite registrar tiempo, sesiones y metas semanales; muestra el progreso del duelo durante la semana; y calcula el cierre semanal y mensual.
 
 No es una app genérica de productividad ni una planilla corporativa. Debe sentirse como un tablero cozy de videojuego retro: compartido, cálido, un poco absurdo y competitivo sin ser punitivo.
 
@@ -59,7 +59,7 @@ Ejemplo: pasar de Trabajo 15 h + Estudio 30 h a Trabajo 20 h + Estudio 25 h por 
 ### 3.3 Semanas o días excepcionales
 
 - Si un día se complica, se reorganizan las actividades en los días restantes: la app no necesita “mover” nada automáticamente.
-- Si varios días alteran de forma importante la semana, Bri y Facu pueden acordar bajar objetivos para esa semana.
+- Si varios días alteran de forma importante la semana, Persona B y Persona A pueden acordar bajar objetivos para esa semana.
 - Toda excepción debe guardar una explicación y el cambio de objetivos. No debe parecer un ajuste silencioso de último momento.
 
 ### 3.4 Categorías
@@ -159,7 +159,7 @@ Equilibrio de ocio:
 ### 3.11 Cierres y resultados
 
 - Durante la semana se muestra el progreso y el puntaje estimado apenas se carga un resultado.
-- Bri y Facu cierran juntos la semana el domingo por la noche, normalmente en llamada.
+- Persona B y Persona A cierran juntos la semana el domingo por la noche, normalmente en llamada.
 - El cierre puede tener una animación o ceremonia visual, pero los cálculos deben estar visibles antes de cerrarlo.
 - Desempates semanales: mayor promedio de cumplimiento de Trabajo + Estudio; menor ocio fuga; más días activos; mejor saldo; piedra, papel o tijera.
 - Si el empate persiste, ambos pueden ganar el premio cooperativo o resolverlo según el premio acordado.
@@ -171,7 +171,7 @@ Equilibrio de ocio:
 
 ### Incluye
 
-- Dos cuentas privadas, Bri y Facu, dentro del mismo espacio compartido.
+- Dos cuentas privadas, Persona B y Persona A, dentro del mismo espacio compartido.
 - Crear y activar una semana con objetivos, metas semanales, Cultivo y premios.
 - Cronómetro persistente con pausa manual y recuperación al volver a abrir la app.
 - Registro manual, edición e historial de cambios.
@@ -244,10 +244,10 @@ También tiene el botón `+ Agregar registro` para carga manual.
 ## 6. Dirección visual
 
 - Pixel art cozy, romántico y retro game.
-- Gatos/avatares para Bri y Facu; corazones, nubes, pasto, flores, honguitos y fuego como elementos de escena.
+- Gatos/avatares para Persona B y Persona A; corazones, nubes, pasto, flores, honguitos y fuego como elementos de escena.
 - El tablero debe sentirse como videojuego, pero los números permanecen legibles.
 - Textos, tablas, botones y barras se implementan como interfaz web. Las ilustraciones y decoraciones pueden producirse con cualquier herramienta adecuada.
-- Actualización del 11/11/2026: el diseño no depende de que Bri prepare Canva, PNG o bocetos. Al retomar, el asistente puede proponer y desarrollar la dirección visual con Facu. Se mantiene la estética de gatos y pixel art.
+- Actualización del 11/11/2026: el diseño no depende de que Persona B prepare Canva, PNG o bocetos. Al retomar, el asistente puede proponer y desarrollar la dirección visual con Persona A. Se mantiene la estética de gatos y pixel art.
 - Antes de programar, preparar cuatro referencias visuales: Duelo, Registrar, Semana y Cierre.
 
 ---
@@ -293,20 +293,20 @@ Historial de cambios
 ## 8. Orden recomendado de trabajo
 
 1. Pasar este documento a “reglas activas” y resolver cualquier matiz antes de programar.
-2. Proponer el tablero principal en desktop y su adaptación móvil; revisarlo con Facu y extender la dirección a las otras pantallas. No esperar diseños externos de Bri.
+2. Proponer el tablero principal en desktop y su adaptación móvil; revisarlo con Persona A y extender la dirección a las otras pantallas. No esperar diseños externos de Persona B.
 3. Crear el proyecto, repositorio y servicios de datos/publicación.
 4. Construir un recorrido completo mínimo: iniciar sesión → crear semana → cargar un registro manual → ver progreso actualizado.
 5. Agregar cronómetro y edición con auditoría.
 6. Agregar banco de ocio, Constancia, Cultivo, metas semanales y puntaje.
 7. Construir cierre semanal e historial.
-8. Probar una semana real entre Bri y Facu; ajustar fricción y reglas antes de sumar gamificación.
+8. Probar una semana real entre Persona B y Persona A; ajustar fricción y reglas antes de sumar gamificación.
 9. Recién después agregar PWA, Pomodoro, música, logros y animaciones.
 
 ---
 
 ## 9. Criterios de aceptación antes de usarla en serio
 
-- Bri y Facu pueden usarla desde sus teléfonos y ven los mismos datos.
+- Persona B y Persona A pueden usarla desde sus teléfonos y ven los mismos datos.
 - Un registro nuevo actualiza las barras y el puntaje sin recargar manualmente.
 - El cronómetro no pierde una sesión por cerrar la pestaña.
 - Ocio fuga aplica exactamente el multiplicador 1,5.

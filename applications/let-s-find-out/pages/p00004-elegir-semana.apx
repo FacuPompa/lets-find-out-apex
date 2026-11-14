@@ -1,0 +1,108 @@
+page 4 (
+    name: Elegir semana
+    alias: ELEGIR-SEMANA
+    title: Elegir semana
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    region semana (
+        name: Elegí la semana de trabajo
+        type: staticContent
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+        source {
+            htmlCode:
+                ```html
+                <p>Elegí cualquier día de la semana. La selección se guarda para tu cuenta y se usa en las metas y sesiones.</p>
+                ```
+        }
+    )
+    pageItem P4_DIA (
+        type: datePicker
+        label {
+            label: Día de la semana
+        }
+        layout {
+            sequence: 10
+            region: @semana
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+            formatMask: YYYY-MM-DD
+        }
+        validation {
+            valueRequired: true
+        }
+        default {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                return nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD'));
+                ```
+        }
+    )
+    button elegir (
+        buttonName: ELEGIR
+        label: Usar esta semana
+        layout {
+            sequence: 20
+            region: @semana
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+    )
+    process guardar-semana (
+        name: Guardar semana seleccionada
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                apex_util.set_preference(
+                    p_preference => 'LFO_SEMANA',
+                    p_value => to_char(trunc(to_date(:P4_DIA, 'FXYYYY-MM-DD'), 'IW'), 'YYYY-MM-DD'),
+                    p_user => :APP_USER
+                );
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @elegir
+        }
+        successMessage {
+            successMessage: Semana seleccionada.
+        }
+    )
+    branch volver (
+        name: Volver a semana
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 4
+                clearCache: 4
+            }
+        }
+    )
+)

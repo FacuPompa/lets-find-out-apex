@@ -16,7 +16,7 @@ Trabajamos con desarrollo guiado por especificaciones (SDD): describimos el prob
 
 ## Flujo para una funcionalidad
 
-1. Escribir o actualizar una especificación: problema, alcance, ejemplos, criterios de aceptación y dudas. Facu y Brisa deciden las reglas de producto.
+1. Escribir o actualizar una especificación: problema, alcance, ejemplos, criterios de aceptación y dudas. Las reglas de producto se deciden en conjunto.
 2. Resolver las dudas necesarias para empezar. Si se usa una hipótesis provisional, identificarla y no darla por confirmada.
 3. Preparar un plan técnico breve y, cuando corresponda, registrar una decisión relevante. Crear una rama `feat/`, `fix/` o `docs/` una vez que exista el repositorio Git.
 4. Implementar en pasos pequeños; ejecutar comprobaciones apropiadas y registrar qué pasó, incluyendo errores o pruebas pendientes.
@@ -24,7 +24,7 @@ Trabajamos con desarrollo guiado por especificaciones (SDD): describimos el prob
 
 ## Comprobaciones automáticas
 
-Ejecutar `python3 scripts/check_repository.py` desde la raíz. Revisa archivos sensibles comunes, marcadores de claves privadas y secciones básicas de las especificaciones; no detecta todos los secretos ni verifica que el contenido sea correcto. No imprime contenidos de archivos. GitHub Actions ejecutará la misma revisión en pushes y pull requests una vez creado el repositorio. Las pruebas SQL requieren una base de pruebas y se ejecutan por separado; no están automatizadas en GitHub.
+Ejecutar `python3 scripts/check_repository.py` desde la raíz. Revisa archivos sensibles comunes, marcadores de claves privadas y secciones básicas de las especificaciones; no detecta todos los secretos ni verifica que el contenido sea correcto. No imprime contenidos de archivos. GitHub Actions ejecuta la misma revisión en pushes y pull requests. Las pruebas SQL requieren una base de pruebas y se ejecutan por separado; no están automatizadas en GitHub.
 
 El registro de avances es manual o asistido por Codex: anotar cambios relevantes y resultados reales, no cada mensaje ni cada ejecución. Git aportará el historial detallado de cambios cuando exista el repositorio.
 
