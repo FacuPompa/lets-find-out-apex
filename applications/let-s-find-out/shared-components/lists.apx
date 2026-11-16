@@ -148,6 +148,32 @@ list navigation-menu (
         }
     )
 
+    entry mis-registros (
+        label: Mis registros
+        layout {
+            sequence: 90
+        }
+        link {
+            target: {
+                page: 11
+                clearCache: 11
+            }
+        }
+    )
+
+    entry cargar-tiempo-manual (
+        label: Cargar tiempo manual
+        layout {
+            sequence: 100
+        }
+        link {
+            target: {
+                page: 13
+                clearCache: 13
+            }
+        }
+    )
+
     entry cierre-diario (
         label: Cierre del día
         layout {

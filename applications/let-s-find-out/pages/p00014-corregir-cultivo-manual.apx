@@ -1,0 +1,174 @@
+page 14 (
+    name: Corregir sesión de Cultivo
+    alias: CORREGIR-CULTIVO-MANUAL
+    title: Corregir sesión de Cultivo
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    region correccion (
+        name: Corregir sesión manual de Cultivo
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>Podés corregir los minutos o elegir otra actividad de la misma semana. La fecha de la sesión se conserva.</p>
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P14_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @correccion
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P14_VERSION (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @correccion
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P14_META (
+        type: selectList
+        label {
+            label: Actividad
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select m.nombre d,m.id r from lfo_metas_cultivo m
+                join lfo_registros_cultivo r on r.id=to_number(:P14_ID) and r.semana_inicio=m.semana_inicio
+                join lfo_metas_cultivo original on original.id=r.meta_id and original.persona=m.persona
+                where m.persona=lfo_persona_actual
+                order by m.nombre,m.id
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una actividad
+        }
+        layout {
+            sequence: 30
+            region: @correccion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    pageItem P14_MINUTOS (
+        type: numberField
+        label {
+            label: Minutos
+        }
+        layout {
+            sequence: 40
+            region: @correccion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    button guardar (
+        buttonName: GUARDAR
+        label: Guardar corrección
+        layout {
+            sequence: 50
+            region: @correccion
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+    process cargar (
+        name: Cargar sesión propia
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                begin
+                    select r.meta_id,r.minutos into :P14_META,:P14_MINUTOS
+                    from lfo_registros_cultivo r join lfo_metas_cultivo m on m.id=r.meta_id
+                    where r.id=to_number(:P14_ID) and m.persona=lfo_persona_actual;
+                    select nvl(max(id),0) into :P14_VERSION from lfo_correcciones_cultivo_manual
+                    where registro_id=to_number(:P14_ID);
+                exception when no_data_found then
+                    raise_application_error(-20210,'La sesión no está disponible para tu cuenta.');
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+    )
+    process guardar (
+        name: Guardar corrección de Cultivo
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_cultivo_manual_edicion.corregir(to_number(:P14_ID),to_number(:P14_VERSION),
+                  to_number(:P14_META),apex_session_state.get_number('P14_MINUTOS'));
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @guardar
+        }
+        successMessage {
+            successMessage: Sesión de Cultivo corregida.
+        }
+    )
+    branch volver (
+        name: Volver a mis registros
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 11
+                clearCache: 11
+            }
+        }
+    )
+)

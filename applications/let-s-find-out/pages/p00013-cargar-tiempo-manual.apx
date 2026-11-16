@@ -1,0 +1,206 @@
+page 13 (
+    name: Cargar tiempo manual
+    alias: CARGAR-TIEMPO-MANUAL
+    title: Cargar tiempo manual
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    region carga (
+        name: Agregar tiempo
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                begin
+                    return '<p>El tiempo se agregará a tu día personal: <strong>' || to_char(to_date(:P13_FECHA,'FXYYYY-MM-DD'),'DD/MM/YYYY') ||
+                      '</strong>. Para Cultivo usá el registro por actividad.</p>';
+                end;
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P13_FECHA (
+        type: hidden
+        layout {
+            sequence: 5
+            region: @carga
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P13_DIA (
+        type: hidden
+        layout {
+            sequence: 6
+            region: @carga
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P13_CATEGORIA (
+        type: selectList
+        label {
+            label: Categoría
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select 'Trabajo' d,'TRABAJO' r from dual union all
+                select 'Estudio','ESTUDIO' from dual union all
+                select 'Ocio','OCIO' from dual
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una categoría
+        }
+        layout {
+            sequence: 10
+            region: @carga
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    pageItem P13_HORAS (
+        type: numberField
+        label {
+            label: Horas
+        }
+        layout {
+            sequence: 20
+            region: @carga
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    pageItem P13_MINUTOS (
+        type: numberField
+        label {
+            label: Minutos
+        }
+        layout {
+            sequence: 30
+            region: @carga
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    pageItem P13_SEGUNDOS (
+        type: numberField
+        label {
+            label: Segundos
+        }
+        layout {
+            sequence: 40
+            region: @carga
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    button guardar (
+        buttonName: GUARDAR
+        label: Agregar tiempo
+        layout {
+            sequence: 50
+            region: @carga
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+    process cargar-fecha (
+        name: Preparar día personal
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    v_fecha date;
+                begin
+                    select max(fecha_logica),max(id) into v_fecha,:P13_DIA from lfo_dias_personales
+                    where persona=lfo_persona_actual and cerrado_en is null;
+                    :P13_FECHA:=to_char(nvl(v_fecha,trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date))),'YYYY-MM-DD');
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+    )
+    process guardar (
+        name: Guardar tiempo manual
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    h number:=nvl(apex_session_state.get_number('P13_HORAS'),0);
+                    m number:=nvl(apex_session_state.get_number('P13_MINUTOS'),0);
+                    s number:=nvl(apex_session_state.get_number('P13_SEGUNDOS'),0);
+                begin
+                    if h<0 or m<0 or m>=60 or s<0 or s>=60 or h!=trunc(h) or m!=trunc(m) or s!=trunc(s) then
+                        raise_application_error(-20197,'Indicá horas enteras y minutos y segundos entre 0 y 59.');
+                    end if;
+                    lfo_tiempo_manual_api.crear(:P13_CATEGORIA,h*3600+m*60+s,to_date(:P13_FECHA,'FXYYYY-MM-DD'),to_number(:P13_DIA));
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @guardar
+        }
+        successMessage {
+            successMessage: Tiempo manual agregado.
+        }
+    )
+    branch volver (
+        name: Ver mis registros
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 11
+                clearCache: 11
+            }
+        }
+    )
+)

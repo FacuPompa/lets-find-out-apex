@@ -1,0 +1,275 @@
+page 11 (
+    name: Mis registros
+    alias: MIS-REGISTROS
+    title: Mis registros
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    javaScript {
+        executeWhenPageLoads:
+            ```javascript
+            (() => {
+              const tipo = apex.item('P11_TIPO');
+              const categoria = apex.item('P11_CATEGORIA');
+              const actividad = apex.item('P11_ACTIVIDAD');
+              const mostrar = () => {
+                if (tipo.getValue() === 'CATEGORIA') { categoria.show(); actividad.hide(); }
+                else if (tipo.getValue() === 'ACTIVIDAD') { categoria.hide(); actividad.show(); }
+                else { categoria.hide(); actividad.hide(); }
+              };
+              document.getElementById('P11_TIPO').addEventListener('change', () => {
+                categoria.setValue('');
+                actividad.setValue('');
+                mostrar();
+              });
+              mostrar();
+            })();
+            ```
+    }
+    region registros (
+        name: Elegí un registro
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>Primero elegí si querés corregir una categoría o una actividad de Cultivo. Después seleccioná el registro.</p>
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P11_TIPO (
+        type: selectList
+        label {
+            label: ¿Qué querés corregir?
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select 'Una categoría (Trabajo, Estudio u Ocio)' d, 'CATEGORIA' r from dual union all
+                select 'Una actividad de Cultivo', 'ACTIVIDAD' from dual
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una opción
+        }
+        layout {
+            sequence: 10
+            region: @registros
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+    )
+    pageItem P11_CATEGORIA (
+        type: selectList
+        label {
+            label: Categoría
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select 'Trabajo' d,'TRABAJO' r from dual union all
+                select 'Estudio','ESTUDIO' from dual union all
+                select 'Ocio','OCIO' from dual
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una categoría
+        }
+        layout {
+            sequence: 20
+            region: @registros
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    pageItem P11_ACTIVIDAD (
+        type: selectList
+        label {
+            label: Actividad de Cultivo
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select m.nombre || ' | semana del ' || to_char(m.semana_inicio,'DD/MM/YYYY') d,m.id r
+                from lfo_metas_cultivo m
+                where m.persona=lfo_persona_actual
+                  and (exists (select 1 from lfo_tiempo_actual_v r where r.persona=m.persona and r.meta_id=m.id)
+                    or exists (select 1 from lfo_registros_cultivo r where r.meta_id=m.id))
+                order by m.semana_inicio desc,m.nombre,m.id
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una actividad
+        }
+        layout {
+            sequence: 30
+            region: @registros
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    pageItem P11_REGISTRO (
+        type: selectList
+        label {
+            label: Registro
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select d,r from (
+                select to_char(r.fecha_logica,'DD/MM/YYYY') || ' | ' ||
+                       to_char(r.desde at time zone 'America/Argentina/Buenos_Aires','HH24:MI') || ' | ' ||
+                       initcap(r.categoria) || case when m.nombre is not null then ': ' || m.nombre end ||
+                       case when r.id<0 then ' (carga manual)' end || ' | ' ||
+                       floor(r.segundos/3600) || ' h ' || floor(mod(r.segundos,3600)/60) || ' min ' ||
+                       floor(mod(r.segundos,60)) || ' s' d, 'T:' || to_char(r.id) r, r.fecha_logica orden_fecha, r.id orden_id
+                from lfo_tiempo_actual_v r left join lfo_metas_cultivo m on m.id=r.meta_id and m.persona=r.persona
+                where r.persona=lfo_persona_actual and r.dia_id is not null
+                  and ((:P11_TIPO='CATEGORIA' and r.categoria=:P11_CATEGORIA and r.categoria in ('TRABAJO','ESTUDIO','OCIO'))
+                    or (:P11_TIPO='ACTIVIDAD' and r.categoria='CULTIVO' and r.meta_id=to_number(:P11_ACTIVIDAD)))
+                union all
+                select to_char(r.dia_logico,'DD/MM/YYYY') || ' | Cultivo: ' || m.nombre ||
+                       ' (sesión manual) | ' || r.minutos || ' min', 'C:' || to_char(r.id), r.dia_logico, r.id
+                from lfo_registros_cultivo r join lfo_metas_cultivo m on m.id=r.meta_id
+                where m.persona=lfo_persona_actual and :P11_TIPO='ACTIVIDAD' and r.meta_id=to_number(:P11_ACTIVIDAD)
+                ) order by orden_fecha desc, orden_id desc
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí un registro
+        }
+        layout {
+            sequence: 40
+            region: @registros
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+        cascadingLov {
+            parentItems: P11_TIPO,P11_CATEGORIA,P11_ACTIVIDAD
+            parentRequired: false
+        }
+    )
+    button editar (
+        buttonName: EDITAR
+        label: Corregir registro
+        layout {
+            sequence: 50
+            region: @registros
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+    pageItem P11_ORIGEN (
+        type: hidden
+        layout {
+            sequence: 60
+            region: @registros
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: unrestricted
+        }
+    )
+    pageItem P11_IDENTIFICADOR (
+        type: hidden
+        layout {
+            sequence: 70
+            region: @registros
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: unrestricted
+        }
+    )
+    process preparar (
+        name: Preparar registro seleccionado
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                begin
+                    if not regexp_like(:P11_REGISTRO,'^[TC]:-?[0-9]+$') then
+                        raise_application_error(-20210,'Elegí un registro válido.');
+                    end if;
+                    :P11_ORIGEN:=substr(:P11_REGISTRO,1,1);
+                    :P11_IDENTIFICADOR:=substr(:P11_REGISTRO,3);
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @editar
+        }
+    )
+    branch editar-manual-cultivo (
+        name: Corregir sesión manual de Cultivo
+        execution {
+            sequence: 5
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 14
+                clearCache: 14
+                items: {
+                    P14_ID: &P11_IDENTIFICADOR.
+                }
+            }
+        }
+        serverSideCondition {
+            type: expression
+            plsqlExpression: :P11_ORIGEN = 'C'
+        }
+    )
+    branch editar (
+        name: Abrir corrección
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 12
+                clearCache: 12
+                items: {
+                    P12_ID: &P11_IDENTIFICADOR.
+                }
+            }
+        }
+    )
+)
