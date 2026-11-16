@@ -196,3 +196,9 @@ Se confirmó que un día personal pertenece a la semana de su fecha, aunque se c
 Se observó un objetivo de Cultivo con decimales extensos y una diferencia visual de un segundo al restar duraciones. Se preparó una presentación uniforme en horas, minutos y segundos y una resta coherente con los valores visibles. La validación live y la generación de la pantalla con el caso observado pasaron; se importó con autorización y se confirmó la configuración instalada. Falta comprobación visual.
 
 Se confirmó en navegador que el objetivo de Cultivo se muestra en horas y minutos. La puntuación de constancia sigue pendiente de una prueba completa desde la interfaz.
+
+### 16/11/2026 — Progreso compartido de metas semanales
+
+Se preparó la presentación del avance y puntaje de metas semanales de cada persona en el progreso compartido. Una prueba con sesión APEX y datos temporales verificó el resultado proporcional y el caso sin metas para personas distintas; la validación live pasó. Se importó con autorización y se confirmó que la pantalla usa la vista correspondiente. Falta prueba en navegador.
+
+Se confirmó en navegador que tres metas completadas de tres muestran cinco puntos en el progreso semanal.

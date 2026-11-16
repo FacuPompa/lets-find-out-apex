@@ -32,6 +32,9 @@ page 8 (
                     v_faltan number;
                     v_dias_activos number;
                     v_puntos_constancia number;
+                    v_metas_total number;
+                    v_metas_completadas number;
+                    v_metas_puntos number;
                     function duracion(p_segundos number) return varchar2 is
                       v_segundos number := floor(greatest(nvl(p_segundos,0),0));
                     begin
@@ -71,8 +74,17 @@ page 8 (
                         from lfo_constancia_semanal_v
                         where persona=persona.persona and semana_inicio=v_semana;
                         v_html := v_html || '<p>Constancia: <strong>' || v_dias_activos || ' días activos | ' || v_puntos_constancia || ' de 5 puntos</strong></p>';
+                        select nvl(max(m.total),0), nvl(max(m.completadas),0), max(m.puntos)
+                        into v_metas_total, v_metas_completadas, v_metas_puntos
+                        from lfo_resumen_metas_semanales_v m
+                        where m.persona=persona.persona and m.semana_inicio=v_semana;
+                        if v_metas_total=0 then
+                            v_html := v_html || '<p>Metas semanales: <strong>Sin metas</strong></p>';
+                        else
+                            v_html := v_html || '<p>Metas semanales: <strong>' || v_metas_completadas || ' de ' || v_metas_total || ' completadas | ' || to_char(round(v_metas_puntos,2),'FM990D00') || ' de 5 puntos</strong></p>';
+                        end if;
                     end loop;
-                    return v_html || '<p>El objetivo de Cultivo suma los mínimos de cada actividad multiplicados por sus veces semanales. Los puntos son parciales: se calculan Trabajo y Estudio con objetivo y Constancia. Un día activo requiere una hora de Trabajo o Estudio, por separado. El tiempo proviene de cronómetros asociados a un día personal; no incluye intervalos anteriores sin día ni sesiones manuales de Cultivo.</p>';
+                    return v_html || '<p>El objetivo de Cultivo suma los mínimos de cada actividad multiplicados por sus veces semanales. Los puntos son parciales: se calculan Trabajo y Estudio con objetivo, Constancia y Metas semanales. Un día activo requiere una hora de Trabajo o Estudio, por separado. El tiempo proviene de cronómetros asociados a un día personal; no incluye intervalos anteriores sin día ni sesiones manuales de Cultivo.</p>';
                 end;
                 ```
         }
