@@ -153,3 +153,12 @@ Se instalaron objetivos de horas por cuenta, categoría y semana y una vista de 
 ### 14/11/2026 — Revisión de cambios para versionar
 
 Se revisó el estado de la aplicación y se actualizó la documentación para distinguir lo implementado de lo pendiente. Pasaron las once comprobaciones SQL en desarrollo, con sesiones y datos temporales, y la validación live de APEX; no se ejecutaron pruebas automáticas de interfaz. Se verificó que la exportación no contenga el valor privado de protección. La entrega mantiene como pendientes la integración de Cultivo, las correcciones y la comprobación completa de permisos.
+
+
+### 14/11/2026 — Integración de Cultivo con cronómetro
+
+Se preparó una integración aditiva para asociar el tiempo nuevo del cronómetro a una actividad, acumular también las sesiones manuales nuevas y mantener el cálculo de registros anteriores. La prueba SQL con rollback verificó tiempos cortos, múltiplos, descarte al completar, actividad ajena, semana incorrecta, aviso cercano y ausencia de cargas repetidas. La selección de actividad y la confirmación de APEX pasaron la validación live y se importaron a desarrollo con autorización. Se comprobó que la página y sus procesos existen, que los objetos de base están válidos y que la prueba SQL sigue pasando; falta la comprobación desde el navegador.
+
+Se confirmó en navegador que dos sesiones cortas acumulan un cumplimiento. Se detectó que el cronómetro seguía activo al elegir la actividad; se implementó una pausa al pulsar «Registrar tiempo». Una prueba con sesión temporal y rollback verificó la pausa y la repetición con el reloj ya pausado; la validación live de APEX pasó, se importó a desarrollo con autorización y se confirmó el proceso instalado. Falta comprobarlo desde el navegador.
+
+Se comprobó en navegador que el cronómetro se pausa al comenzar el registro. El aviso de cercanía a otro cumplimiento sigue pendiente de comprobación visual.

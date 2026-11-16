@@ -218,7 +218,7 @@ page 3 (
                     where id = to_number(:P3_META)
                     and persona = lfo_persona_actual
                     and semana_inicio = to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD');
-                    lfo_registrar_sesion(meta_seleccionada, to_date(:P3_DIA, 'YYYY-MM-DD'), to_number(:P3_MINUTOS));
+                    lfo_cultivo_nuevo.registrar_manual(meta_seleccionada, to_date(:P3_DIA, 'YYYY-MM-DD'), to_number(:P3_MINUTOS));
                 exception when no_data_found then
                     raise_application_error(-20015, 'La meta no está disponible para tu cuenta y semana seleccionada.');
                 end;
@@ -258,7 +258,7 @@ page 3 (
                 declare
                     resultado clob := '<div class="t-Report"><div class="t-Report-wrap lfo-progreso-scroll"><table class="t-Report-report"><thead><tr><th scope="col">Persona</th><th scope="col">Actividad</th><th scope="col">Semana</th><th scope="col">Cumplidas</th><th scope="col">Objetivo</th><th scope="col">Faltan</th></tr></thead><tbody>';
                 begin
-                    for meta in (select persona, semana_inicio, nombre, cumplimientos, veces_por_semana, faltantes from lfo_progreso_cultivo_v where semana_inicio = to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD') order by persona, nombre, id) loop
+                    for meta in (select persona, semana_inicio, nombre, cumplimientos, veces_por_semana, faltantes from lfo_progreso_cultivo_v2 where semana_inicio = to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD') order by persona, nombre, id) loop
                         null; resultado := resultado || '<tr><td>' || apex_escape.html(meta.persona) || '</td><td>' || apex_escape.html(meta.nombre) || '</td><td>' || to_char(meta.semana_inicio, 'DD/MM/YYYY') || '</td><td>' || meta.cumplimientos || '</td><td>' || meta.veces_por_semana || '</td><td>' || meta.faltantes || '</td></tr>';
                     end loop;
                     return resultado || '</tbody></table></div></div>';
