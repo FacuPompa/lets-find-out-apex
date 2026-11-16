@@ -135,6 +135,19 @@ list navigation-menu (
         }
     )
 
+    entry metas-semanales (
+        label: Mis metas semanales
+        layout {
+            sequence: 80
+        }
+        link {
+            target: {
+                page: 10
+                clearCache: 10
+            }
+        }
+    )
+
     entry cierre-diario (
         label: Cierre del día
         layout {

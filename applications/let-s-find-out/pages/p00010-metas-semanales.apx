@@ -1,0 +1,247 @@
+page 10 (
+    name: Metas semanales
+    alias: METAS-SEMANALES
+    title: Metas semanales
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    region resumen (
+        name: Mis metas de la semana
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                  v_semana date := to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'FXYYYY-MM-DD');
+                  v_html clob := '<p>Semana del ' || to_char(v_semana,'DD/MM/YYYY') || ' al ' || to_char(v_semana+6,'DD/MM/YYYY') || '.</p>';
+                  v_total number := 0;
+                  v_completadas number := 0;
+                begin
+                  v_html := v_html || '<ul>';
+                  for m in (select descripcion, completada from lfo_metas_semanales where persona=lfo_persona_actual and semana_inicio=v_semana order by id) loop
+                    v_total := v_total+1;
+                    if m.completada='S' then v_completadas:=v_completadas+1; end if;
+                    v_html := v_html || '<li>' || apex_escape.html(m.descripcion) || ' | ' || case when m.completada='S' then 'Completada' else 'Pendiente' end || '</li>';
+                  end loop;
+                  v_html := v_html || '</ul>';
+                  if v_total=0 then return v_html || '<p>Todavía no hay metas para esta semana.</p>'; end if;
+                  return v_html || '<p>Completadas: ' || v_completadas || ' de ' || v_total || ' | Puntos: ' || to_char(round(5*v_completadas/v_total,2),'FM990D00') || ' de 5</p>';
+                end;
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    region agregar (
+        name: Agregar una meta
+        type: staticContent
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P10_DESCRIPCION (
+        type: textField
+        label {
+            label: Meta
+        }
+        layout {
+            sequence: 10
+            region: @agregar
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    pageItem P10_SEMANA (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @agregar
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+        default {
+            type: functionBody
+            plsqlFunctionBody:
+                ```plsql
+                return nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD'));
+                ```
+        }
+    )
+    button agregar (
+        buttonName: AGREGAR
+        label: Agregar meta
+        layout {
+            sequence: 30
+            region: @agregar
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+    region actualizar (
+        name: Actualizar una meta
+        type: staticContent
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P10_META (
+        type: selectList
+        label {
+            label: Meta
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select descripcion || case when completada='S' then ' | Completada' else ' | Pendiente' end d, id r
+                from lfo_metas_semanales
+                where persona=lfo_persona_actual
+                  and semana_inicio=to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date),'IW'),'YYYY-MM-DD')),'FXYYYY-MM-DD')
+                order by id
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una meta
+        }
+        layout {
+            sequence: 10
+            region: @actualizar
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+        advanced {
+            warnOnUnsavedChanges: ignore
+        }
+    )
+    button completar (
+        buttonName: COMPLETAR
+        label: Marcar completada
+        layout {
+            sequence: 20
+            region: @actualizar
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+        }
+    )
+    button pendiente (
+        buttonName: PENDIENTE
+        label: Marcar pendiente
+        layout {
+            sequence: 30
+            region: @actualizar
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+        }
+    )
+    process agregar-meta (
+        name: Agregar meta semanal
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_metas_semanales_api.crear(:P10_DESCRIPCION,to_date(:P10_SEMANA,'FXYYYY-MM-DD'));
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @agregar
+        }
+        successMessage {
+            successMessage: Meta agregada.
+        }
+    )
+    process completar-meta (
+        name: Completar meta semanal
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_metas_semanales_api.cambiar_estado(to_number(:P10_META),'S',to_date(:P10_SEMANA,'FXYYYY-MM-DD'));
+                ```
+        }
+        execution {
+            sequence: 20
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @completar
+        }
+        successMessage {
+            successMessage: Meta completada.
+        }
+    )
+    process reabrir-meta (
+        name: Marcar meta pendiente
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_metas_semanales_api.cambiar_estado(to_number(:P10_META),'N',to_date(:P10_SEMANA,'FXYYYY-MM-DD'));
+                ```
+        }
+        execution {
+            sequence: 30
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @pendiente
+        }
+        successMessage {
+            successMessage: Meta pendiente.
+        }
+    )
+    branch volver (
+        name: Volver a las metas
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 10
+                clearCache: 10
+            }
+        }
+    )
+)

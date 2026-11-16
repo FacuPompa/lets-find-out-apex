@@ -162,3 +162,37 @@ Se preparó una integración aditiva para asociar el tiempo nuevo del cronómetr
 Se confirmó en navegador que dos sesiones cortas acumulan un cumplimiento. Se detectó que el cronómetro seguía activo al elegir la actividad; se implementó una pausa al pulsar «Registrar tiempo». Una prueba con sesión temporal y rollback verificó la pausa y la repetición con el reloj ya pausado; la validación live de APEX pasó, se importó a desarrollo con autorización y se confirmó el proceso instalado. Falta comprobarlo desde el navegador.
 
 Se comprobó en navegador que el cronómetro se pausa al comenzar el registro. El aviso de cercanía a otro cumplimiento sigue pendiente de comprobación visual.
+
+### 14/11/2026 — Reinicio de cronómetros
+
+Se instaló en desarrollo un procedimiento que pausa y reinicia un cronómetro, conservando las cargas registradas y la evidencia del tiempo pendiente descartado. La prueba SQL con rollback comprobó el descarte, la conservación de las cargas y el reinicio repetido. El botón con confirmación pasó la validación live de APEX, se importó con autorización y se comprobó el proceso instalado; falta la prueba en navegador.
+
+### 14/11/2026 — Plan y metas semanales
+
+Se desglosaron los pendientes conocidos en un plan revisable. Se instaló una base aditiva de metas semanales por persona y semana; una prueba SQL con rollback verificó el puntaje proporcional, el rechazo de cambios ajenos y la protección ante cambios de semana. La pantalla de alta y cambio de estado pasó la validación live, se importó con autorización y se comprobó que sus procesos y el reinicio de cronómetros siguen instalados. Falta probar en navegador; sigue abierta la regla para semanas sin metas.
+
+Se confirmó en navegador el funcionamiento del reinicio y de las metas semanales. Se informó un aviso de confirmación o salida con aspecto genérico del navegador; falta identificar el recorrido exacto para corregirlo.
+
+Se identificó el aviso como la protección del navegador ante cambios sin guardar. Se validó un ajuste que excluye del detector los campos ocultos internos de Inicio y Cierre y conserva la protección de los formularios. Falta identificar la acción concreta, importar el ajuste y comprobar en navegador si corrige el caso informado.
+
+Se identificó el caso concreto al agregar una meta semanal. La opción de APEX que omite la advertencia al enviar el formulario pasó la validación live y se importó con autorización. Se verificó que el botón y los campos internos tienen la configuración esperada, y que el campo de descripción conserva la protección. Falta comprobar el comportamiento en navegador.
+
+Se informó el mismo aviso al marcar metas como completadas o pendientes. Se configuró el selector para que no cuente como cambio sin guardar, conservando la protección del texto de una meta nueva. La validación live pasó, se importó con autorización y se comprobó la configuración instalada; falta probar en navegador.
+
+### 14/11/2026 — Puntos de trabajo y estudio
+
+Se instaló una función de puntos parciales para trabajo y estudio, con los cortes acordados sin redondear previamente; sin objetivo no asigna puntos. La prueba SQL verificó los límites, fracciones y ausencia de objetivo. La tabla de progreso pasó la validación live, se importó con autorización y se verificó que utiliza la función válida; falta comprobarla en navegador. Constancia, ocio y Cultivo siguen pendientes de puntuación.
+
+Se confirmó la visualización y los puntos en navegador. Se definió el objetivo semanal de horas de Cultivo como la suma del mínimo de cada meta por su frecuencia. La vista nueva pasó una prueba SQL con rollback; las pantallas para eliminar el objetivo independiente y mostrar el calculado pasaron validación live. Falta importar y probarlas; los objetivos independientes anteriores se conservan sin usarse para el cálculo nuevo.
+
+### 16/11/2026 — Objetivo de Cultivo calculado
+
+Se importaron las pantallas de objetivo calculado a desarrollo con autorización. Se verificó que el campo independiente ya no aparece en la configuración, que el progreso usa la vista nueva y que la prueba SQL sigue pasando. Falta comprobar las pantallas en navegador.
+
+Se instaló una base aditiva para reconocer días de constancia mediante horas de trabajo o estudio, con sesiones sumadas por categoría. La prueba SQL verificó que ambas categorías se evalúan por separado. Queda por confirmar a qué semana corresponde un día personal que cruza de domingo a lunes antes de mostrar el puntaje semanal.
+
+Se confirmó que un día personal pertenece a la semana de su fecha, aunque se cierre el lunes siguiente. Se agregó el resumen semanal con un máximo de cinco puntos. La prueba SQL comprobó acumulación de sesiones, categorías separadas y seis días activos con cinco puntos; la pantalla pasó validación live, se importó con autorización y se confirmó que usa la vista válida. Falta prueba en navegador.
+
+Se observó un objetivo de Cultivo con decimales extensos y una diferencia visual de un segundo al restar duraciones. Se preparó una presentación uniforme en horas, minutos y segundos y una resta coherente con los valores visibles. La validación live y la generación de la pantalla con el caso observado pasaron; se importó con autorización y se confirmó la configuración instalada. Falta comprobación visual.
+
+Se confirmó en navegador que el objetivo de Cultivo se muestra en horas y minutos. La puntuación de constancia sigue pendiente de una prueba completa desde la interfaz.

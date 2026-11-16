@@ -56,6 +56,12 @@ page 1 (
                   apex.page.submit({ request: 'PREPARAR_CULTIVO', showWait: true });
                   return;
                 }
+                if (action === 'DESCARTAR') {
+                  apex.message.confirm('¿Querés reiniciar este cronómetro? Se descartará el tiempo pendiente de registrar. Los tiempos ya registrados se conservan.', (confirmar) => {
+                    if (confirmar) apex.page.submit({ request: 'CRONOMETRO', set: { P1_CATEGORIA: button.dataset.categoria, P1_ACCION: action, P1_REINICIAR: 'N' }, showWait: true });
+                  }, { confirmLabel: 'Sí, reiniciar', cancelLabel: 'Cancelar' });
+                  return;
+                }
                 if (action === 'REGISTRAR') sessionStorage.setItem('lfo-preguntar-reinicio', button.dataset.categoria);
                 apex.page.submit({ request: 'CRONOMETRO', set: { P1_CATEGORIA: button.dataset.categoria, P1_ACCION: action, P1_REINICIAR: 'N' }, showWait: true });
               });
@@ -108,6 +114,7 @@ page 1 (
                         else
                             v_html := v_html || '<button type="button" class="t-Button" data-accion="REGISTRAR" data-categoria="' || r.codigo || '">Registrar tiempo</button>';
                         end if;
+                        v_html := v_html || '<button type="button" class="t-Button" data-accion="DESCARTAR" data-categoria="' || r.codigo || '">Reiniciar</button>';
                         v_html := v_html || '</div></section>';
                     end loop;
                     return v_html || '</div>';
@@ -137,6 +144,9 @@ page 1 (
         security {
             sessionStateProtection: unrestricted
         }
+        advanced {
+            warnOnUnsavedChanges: ignore
+        }
     )
     pageItem P1_ACCION (
         type: hidden
@@ -150,6 +160,9 @@ page 1 (
         }
         security {
             sessionStateProtection: unrestricted
+        }
+        advanced {
+            warnOnUnsavedChanges: ignore
         }
     )
     pageItem P1_REINICIAR (
@@ -165,6 +178,9 @@ page 1 (
         security {
             sessionStateProtection: unrestricted
         }
+        advanced {
+            warnOnUnsavedChanges: ignore
+        }
     )
     process operar-cronometro (
         name: Operar cronómetro
@@ -172,7 +188,11 @@ page 1 (
         source {
             plsqlCode:
                 ```plsql
-                lfo_cultivo_nuevo.operar_reloj(:P1_ACCION, :P1_CATEGORIA, :P1_REINICIAR);
+                if :P1_ACCION = 'DESCARTAR' then
+                    lfo_reiniciar_reloj(:P1_CATEGORIA);
+                else
+                    lfo_cultivo_nuevo.operar_reloj(:P1_ACCION, :P1_CATEGORIA, :P1_REINICIAR);
+                end if;
                 ```
         }
         execution {
