@@ -17,7 +17,7 @@ page 7 (
         source {
             htmlCode:
                 ```html
-                <p>Indicá tus horas para la semana seleccionada. Podés usar fracciones, por ejemplo 1,5 para una hora y media. Dejá vacío si no tenés objetivo en una categoría.</p>
+                <p>Indicá tus horas para la semana seleccionada. Podés usar fracciones, por ejemplo 1,5 para una hora y media. Dejá vacío si no tenés objetivo en una categoría. Las horas de Cultivo se calculan a partir de tus metas de Cultivo.</p>
                 ```
         }
         layout {
@@ -74,21 +74,6 @@ page 7 (
             template: @/optional-floating
         }
     )
-    pageItem P7_CULTIVO (
-        type: numberField
-        label {
-            label: Cultivo (horas)
-            alignment: above
-        }
-        layout {
-            sequence: 40
-            region: @objetivos
-            slot: regionBody
-        }
-        appearance {
-            template: @/optional-floating
-        }
-    )
     pageItem P7_SEMANA (
         type: hidden
         layout {
@@ -121,20 +106,18 @@ page 7 (
                 ```plsql
                 declare
                     v_persona varchar2(4) := lfo_persona_actual;
-                    v_trabajo number; v_estudio number; v_ocio number; v_cultivo number;
+                    v_trabajo number; v_estudio number; v_ocio number;
                     v_semana date := to_date(nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER), to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD')), 'YYYY-MM-DD');
                 begin
                     select max(case when categoria = 'TRABAJO' then horas_objetivo end),
                            max(case when categoria = 'ESTUDIO' then horas_objetivo end),
-                           max(case when categoria = 'OCIO' then horas_objetivo end),
-                           max(case when categoria = 'CULTIVO' then horas_objetivo end)
-                    into v_trabajo, v_estudio, v_ocio, v_cultivo
+                           max(case when categoria = 'OCIO' then horas_objetivo end)
+                    into v_trabajo, v_estudio, v_ocio
                     from lfo_objetivos_horas where persona = v_persona and semana_inicio = v_semana;
                     :P7_SEMANA := to_char(v_semana, 'YYYY-MM-DD');
                     :P7_TRABAJO := v_trabajo;
                     :P7_ESTUDIO := v_estudio;
                     :P7_OCIO := v_ocio;
-                    :P7_CULTIVO := v_cultivo;
                 end;
                 ```
         }
@@ -149,13 +132,21 @@ page 7 (
         source {
             plsqlCode:
                 ```plsql
-                lfo_objetivos_horas_api.guardar(
-                    apex_session_state.get_number('P7_TRABAJO'),
-                    apex_session_state.get_number('P7_ESTUDIO'),
-                    apex_session_state.get_number('P7_OCIO'),
-                    apex_session_state.get_number('P7_CULTIVO'),
-                    to_date(:P7_SEMANA, 'FXYYYY-MM-DD')
-                );
+                declare
+                    v_cultivo_anterior number;
+                    v_semana date := to_date(:P7_SEMANA, 'FXYYYY-MM-DD');
+                begin
+                    select max(horas_objetivo) into v_cultivo_anterior
+                    from lfo_objetivos_horas
+                    where persona=lfo_persona_actual and semana_inicio=v_semana and categoria='CULTIVO';
+                    lfo_objetivos_horas_api.guardar(
+                        apex_session_state.get_number('P7_TRABAJO'),
+                        apex_session_state.get_number('P7_ESTUDIO'),
+                        apex_session_state.get_number('P7_OCIO'),
+                        v_cultivo_anterior,
+                        v_semana
+                    );
+                end;
                 ```
         }
         execution {

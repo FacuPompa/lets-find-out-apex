@@ -13,7 +13,7 @@ Actualizado: 14/11/2026. Esta lista divide las necesidades conocidas en entregas
 7. [ ] Permitir corregir registros sin perder el historial y reflejar las correcciones en los resúmenes.
 8. [ ] Definir y construir la reapertura o corrección de días cerrados.
 9. [ ] Definir qué hacer con los intervalos anteriores que no tienen día asignado.
-10. [ ] Calcular los puntos semanales de trabajo, estudio y constancia con las reglas acordadas.
+10. [ ] Completar los puntos semanales: trabajo y estudio se probaron en navegador; la constancia semanal está probada en SQL e importada. Faltan prueba en navegador y definir la presentación del cierre.
 11. [ ] Definir el saldo del banco de ocio y calcular sus puntos.
 12. [ ] Definir y calcular los puntos de metas de Cultivo.
 13. [ ] Implementar cierre y comparación semanal, incluidos premios y empates.

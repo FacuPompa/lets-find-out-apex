@@ -80,6 +80,9 @@ page 5 (
         security {
             sessionStateProtection: checksumRequiredSessionLevel
         }
+        advanced {
+            warnOnUnsavedChanges: ignore
+        }
     )
     pageItem P5_ACTIVO (
         type: hidden
@@ -91,6 +94,9 @@ page 5 (
         security {
             sessionStateProtection: checksumRequiredSessionLevel
         }
+        advanced {
+            warnOnUnsavedChanges: ignore
+        }
     )
     pageItem P5_MENSAJE (
         type: hidden
@@ -101,6 +107,9 @@ page 5 (
         }
         security {
             sessionStateProtection: checksumRequiredSessionLevel
+        }
+        advanced {
+            warnOnUnsavedChanges: ignore
         }
     )
     button cerrar (

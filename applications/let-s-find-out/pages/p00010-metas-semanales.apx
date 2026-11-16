@@ -100,6 +100,9 @@ page 10 (
             buttonTemplate: @/text
             hot: true
         }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
     )
     region actualizar (
         name: Actualizar una meta
@@ -138,6 +141,9 @@ page 10 (
         }
         appearance {
             template: @/optional-floating
+        }
+        advanced {
+            warnOnUnsavedChanges: ignore
         }
     )
     button completar (

@@ -144,6 +144,9 @@ page 1 (
         security {
             sessionStateProtection: unrestricted
         }
+        advanced {
+            warnOnUnsavedChanges: ignore
+        }
     )
     pageItem P1_ACCION (
         type: hidden
@@ -158,6 +161,9 @@ page 1 (
         security {
             sessionStateProtection: unrestricted
         }
+        advanced {
+            warnOnUnsavedChanges: ignore
+        }
     )
     pageItem P1_REINICIAR (
         type: hidden
@@ -171,6 +177,9 @@ page 1 (
         }
         security {
             sessionStateProtection: unrestricted
+        }
+        advanced {
+            warnOnUnsavedChanges: ignore
         }
     )
     process operar-cronometro (
