@@ -40,6 +40,8 @@ Se preparó ese cálculo sin redondear previamente y con puntos sin asignar si f
 
 La base de metas semanales se instaló en desarrollo y su prueba SQL pasó. La pantalla permite agregar metas propias, marcarlas como completadas o pendientes y muestra el cálculo con dos decimales; la base conserva el valor proporcional sin redondearlo. Cuando no hay metas se muestra que no hay metas, sin asignar un puntaje. La pantalla se comprobó en navegador.
 
+Se muestra además la cantidad completada y el puntaje de cada persona en el progreso compartido, o «Sin metas» cuando no tiene ninguna. Pasó una prueba con datos temporales y se confirmó en navegador el resultado de tres metas completadas de tres.
+
 El cálculo es determinista y no requiere un agente de inteligencia artificial. Todavía no está implementado.
 
 ## Criterios de aceptación
