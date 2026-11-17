@@ -212,3 +212,15 @@ Se preparó un recorrido que primero distingue categorías y actividades, agrega
 ### 17/11/2026 — Comprobación de recorridos
 
 Se confirmó que los recorridos de carga manual y corrección funcionan en navegador. La comprobación de aislamiento entre las dos cuentas reales sigue pendiente.
+
+### 17/11/2026 — Base de cierre semanal
+
+Se preparó una vista aditiva con los puntos ya definidos de trabajo, estudio, constancia y metas semanales, sin sumar un total ni cerrar semanas. Una prueba SQL con datos temporales y rollback comprobó porcentajes, ausencia de objetivos y separación por persona. Quedan por definir la puntuación de Cultivo y el cálculo del saldo de ocio antes de completar el cierre.
+
+Se definió Cultivo por proporción de cumplimientos sobre el total previsto y ocio según el exceso sobre las horas previstas. Las funciones y vistas aditivas pasaron pruebas SQL de límites y total de seis rubros; una ejecución de la pantalla con datos temporales confirmó el formato. El progreso con total solo cuando existen todos los datos necesarios pasó validación live, se importó a desarrollo y se confirmó la consulta instalada; falta probar en navegador. El cierre y el tratamiento definitivo de objetivos ausentes siguen pendientes.
+
+Se acordó redondear cada rubro al entero más cercano, con 0,50 hacia arriba, antes de sumar el total. Se actualizó el cálculo del total y la presentación sin decimales. La prueba SQL verificó un caso en el que sumar los rubros redondeados difiere de redondear la suma. Las pantallas pasaron validación live y se importaron; falta comprobarlas en navegador.
+
+Se confirmó que cada persona cierra su semana de manera independiente y necesita al menos una meta semanal y una actividad de Cultivo. Se implementó el cierre con historial de confirmaciones, premio opcional, comparación, empate y detección de cambios posteriores. La prueba SQL comprobó metas obligatorias, independencia, versiones, historial y rechazo de tiempo pendiente; una ejecución de pantalla con datos temporales comprobó empate y detección de datos cambiados. La validación live pasó y se importó a desarrollo. La primera versión también exige objetivos de Trabajo, Estudio y Ocio; falta acordar el tratamiento de objetivos de horas ausentes y probar el recorrido en navegador.
+
+Se confirmó en navegador que el cierre semanal funciona. Quedan pendientes la comparación con ambas cuentas y la regla de objetivos de horas ausentes.

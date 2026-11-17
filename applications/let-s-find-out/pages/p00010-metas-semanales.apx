@@ -31,7 +31,7 @@ page 10 (
                   end loop;
                   v_html := v_html || '</ul>';
                   if v_total=0 then return v_html || '<p>Todavía no hay metas para esta semana.</p>'; end if;
-                  return v_html || '<p>Completadas: ' || v_completadas || ' de ' || v_total || ' | Puntos: ' || to_char(round(5*v_completadas/v_total,2),'FM990D00') || ' de 5</p>';
+                  return v_html || '<p>Completadas: ' || v_completadas || ' de ' || v_total || ' | Puntos: ' || to_char(round(5*v_completadas/v_total),'FM990') || ' de 5</p>';
                 end;
                 ```
         }

@@ -35,6 +35,8 @@ page 8 (
                     v_metas_total number;
                     v_metas_completadas number;
                     v_metas_puntos number;
+                    v_puntos_cultivo number;
+                    v_total number;
                     function duracion(p_segundos number) return varchar2 is
                       v_segundos number := floor(greatest(nvl(p_segundos,0),0));
                     begin
@@ -42,6 +44,8 @@ page 8 (
                     end;
                 begin
                     for persona in (select distinct persona from lfo_cuentas_persona order by persona) loop
+                        select max(c.puntos) into v_puntos_cultivo from lfo_puntos_cultivo_v c
+                        where c.persona=persona.persona and c.semana_inicio=v_semana;
                         v_html := v_html || '<h3>' || apex_escape.html(persona.persona) || '</h3><div class="t-Report lfo-tabla-semanal"><table class="t-Report-report"><thead><tr><th scope="col">Categoría</th><th scope="col">Registrado</th><th scope="col">Objetivo</th><th scope="col">Hasta el objetivo</th><th scope="col">Puntos</th></tr></thead><tbody>';
                         for r in (
                             select c.categoria, c.etiqueta, p.segundos,
@@ -63,6 +67,10 @@ page 8 (
                             end if;
                             if r.categoria in ('TRABAJO','ESTUDIO') and r.horas_objetivo is not null then
                                 v_html := v_html || '<td>' || lfo_puntos_horas(r.segundos,r.horas_objetivo) || ' de 5</td>';
+                            elsif r.categoria='OCIO' and r.horas_objetivo is not null then
+                                v_html := v_html || '<td>' || lfo_puntos_ocio(r.segundos,r.horas_objetivo) || ' de 5</td>';
+                            elsif r.categoria='CULTIVO' and v_puntos_cultivo is not null then
+                                v_html := v_html || '<td>' || to_char(round(v_puntos_cultivo),'FM990') || ' de 5</td>';
                             else
                                 v_html := v_html || '<td>—</td>';
                             end if;
@@ -81,10 +89,17 @@ page 8 (
                         if v_metas_total=0 then
                             v_html := v_html || '<p>Metas semanales: <strong>Sin metas</strong></p>';
                         else
-                            v_html := v_html || '<p>Metas semanales: <strong>' || v_metas_completadas || ' de ' || v_metas_total || ' completadas | ' || to_char(round(v_metas_puntos,2),'FM990D00') || ' de 5 puntos</strong></p>';
+                            v_html := v_html || '<p>Metas semanales: <strong>' || v_metas_completadas || ' de ' || v_metas_total || ' completadas | ' || to_char(round(v_metas_puntos),'FM990') || ' de 5 puntos</strong></p>';
+                        end if;
+                        select max(p.puntos_totales) into v_total from lfo_puntos_semanales_v p
+                        where p.persona=persona.persona and p.semana_inicio=v_semana;
+                        if v_total is null then
+                            v_html := v_html || '<p>Puntaje semanal: <strong>Pendiente de completar objetivos y metas</strong></p>';
+                        else
+                            v_html := v_html || '<p>Puntaje semanal: <strong>' || to_char(round(v_total),'FM990') || ' de 30 puntos</strong></p>';
                         end if;
                     end loop;
-                    return v_html || '<p>El objetivo de Cultivo suma los mínimos de cada actividad multiplicados por sus veces semanales. Los puntos son parciales: se calculan Trabajo y Estudio con objetivo, Constancia y Metas semanales. Un día activo requiere una hora de Trabajo o Estudio, por separado. El tiempo incluye cargas manuales y de cronómetros con día personal; no incluye intervalos anteriores sin día ni sesiones manuales de Cultivo.</p>';
+                    return v_html || '<p>El objetivo de Cultivo suma los mínimos de cada actividad multiplicados por sus veces semanales. Los puntos de Cultivo dependen de los cumplimientos respecto del total previsto; los de Ocio dependen de cuánto se exceda el objetivo. Un día activo requiere una hora de Trabajo o Estudio, por separado. El tiempo incluye cargas manuales y de cronómetros con día personal; no incluye intervalos anteriores sin día ni sesiones manuales de Cultivo.</p>';
                 end;
                 ```
         }
