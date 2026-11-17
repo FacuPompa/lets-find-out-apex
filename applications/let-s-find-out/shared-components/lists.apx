@@ -63,7 +63,7 @@ list navigation-menu (
     name: Navigation Menu
 
     entry home (
-        label: Home
+        label: Inicio
         icon {
             imageIconCssClasses: fa-home
         }
@@ -77,81 +77,30 @@ list navigation-menu (
         }
     )
 
-    entry nueva-meta-de-cultivo (
-        label: Nueva meta de cultivo
+    entry tiempo (
+        label: Tiempo
         icon {
-            imageIconCssClasses: fa-forms
+            imageIconCssClasses: fa-clock-o
         }
         layout {
             sequence: 20
         }
-        isCurrent {
-            type: pages
-            pages: 2
-        }
         link {
             target: {
-                page: 2
-            }
-        }
-    )
-
-    entry colores (
-        label: Colores de cronómetros
-        layout {
-            sequence: 50
-        }
-        link {
-            target: {
-                page: 6
-                clearCache: 6
-            }
-        }
-    )
-
-    entry objetivos-horas (
-        label: Mis objetivos de horas
-        layout {
-            sequence: 60
-        }
-        link {
-            target: {
-                page: 7
-                clearCache: 7
-            }
-        }
-    )
-
-    entry progreso-semanal (
-        label: Progreso semanal
-        layout {
-            sequence: 70
-        }
-        link {
-            target: {
-                page: 8
-                clearCache: 8
-            }
-        }
-    )
-
-    entry metas-semanales (
-        label: Mis metas semanales
-        layout {
-            sequence: 80
-        }
-        link {
-            target: {
-                page: 10
-                clearCache: 10
+                type: url
+                url: #
             }
         }
     )
 
     entry mis-registros (
         label: Mis registros
+        icon {
+            imageIconCssClasses: fa-list
+        }
         layout {
-            sequence: 90
+            sequence: 10
+            parentEntry: @tiempo
         }
         link {
             target: {
@@ -162,9 +111,13 @@ list navigation-menu (
     )
 
     entry cargar-tiempo-manual (
-        label: Cargar tiempo manual
+        label: Cargar tiempo
+        icon {
+            imageIconCssClasses: fa-plus-circle
+        }
         layout {
-            sequence: 100
+            sequence: 20
+            parentEntry: @tiempo
         }
         link {
             target: {
@@ -174,23 +127,14 @@ list navigation-menu (
         }
     )
 
-    entry cierre-semanal (
-        label: Cierre semanal
-        layout {
-            sequence: 110
-        }
-        link {
-            target: {
-                page: 15
-                clearCache: 15
-            }
-        }
-    )
-
     entry cierre-diario (
         label: Cierre del día
+        icon {
+            imageIconCssClasses: fa-calendar-check-o
+        }
         layout {
-            sequence: 40
+            sequence: 30
+            parentEntry: @tiempo
         }
         link {
             target: {
@@ -200,15 +144,151 @@ list navigation-menu (
         }
     )
 
-    entry registrar-cultivo (
-        label: Registrar cultivo
+    entry metas (
+        label: Metas
+        icon {
+            imageIconCssClasses: fa-bullseye
+        }
         layout {
             sequence: 30
         }
         link {
             target: {
+                type: url
+                url: #
+            }
+        }
+    )
+
+    entry registrar-cultivo (
+        label: Cultivo
+        icon {
+            imageIconCssClasses: fa-leaf
+        }
+        layout {
+            sequence: 10
+            parentEntry: @metas
+        }
+        link {
+            target: {
                 page: 3
                 clearCache: 3
+            }
+        }
+    )
+
+    entry nueva-meta-de-cultivo (
+        label: Nueva meta de Cultivo
+        icon {
+            imageIconCssClasses: fa-plus
+        }
+        layout {
+            sequence: 20
+            parentEntry: @metas
+        }
+        link {
+            target: {
+                page: 2
+            }
+        }
+    )
+
+    entry metas-semanales (
+        label: Metas semanales
+        icon {
+            imageIconCssClasses: fa-check-square-o
+        }
+        layout {
+            sequence: 30
+            parentEntry: @metas
+        }
+        link {
+            target: {
+                page: 10
+                clearCache: 10
+            }
+        }
+    )
+
+    entry objetivos-horas (
+        label: Objetivos de horas
+        icon {
+            imageIconCssClasses: fa-hourglass-half
+        }
+        layout {
+            sequence: 40
+            parentEntry: @metas
+        }
+        link {
+            target: {
+                page: 7
+                clearCache: 7
+            }
+        }
+    )
+
+    entry resultados (
+        label: Progreso
+        icon {
+            imageIconCssClasses: fa-bar-chart
+        }
+        layout {
+            sequence: 40
+        }
+        link {
+            target: {
+                type: url
+                url: #
+            }
+        }
+    )
+
+    entry progreso-semanal (
+        label: Progreso semanal
+        icon {
+            imageIconCssClasses: fa-line-chart
+        }
+        layout {
+            sequence: 10
+            parentEntry: @resultados
+        }
+        link {
+            target: {
+                page: 8
+                clearCache: 8
+            }
+        }
+    )
+
+    entry cierre-semanal (
+        label: Cierre semanal
+        icon {
+            imageIconCssClasses: fa-calendar-check-o
+        }
+        layout {
+            sequence: 20
+            parentEntry: @resultados
+        }
+        link {
+            target: {
+                page: 15
+                clearCache: 15
+            }
+        }
+    )
+
+    entry colores (
+        label: Colores
+        icon {
+            imageIconCssClasses: fa-paint-brush
+        }
+        layout {
+            sequence: 50
+        }
+        link {
+            target: {
+                page: 6
+                clearCache: 6
             }
         }
     )

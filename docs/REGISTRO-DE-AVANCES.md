@@ -2,6 +2,10 @@
 
 Entradas breves para cambios relevantes. El estado actual y los próximos pasos están en `../LEEME-PRIMERO.md`; las reglas están en las especificaciones. No registrar secretos ni datos personales innecesarios.
 
+## 2026-11-17 — Navegación lateral
+
+Se agruparon las pantallas en Tiempo, Metas y Progreso y se diferenciaron sus iconos, conservando los accesos existentes. La validación live y la importación a desarrollo finalizaron correctamente y se comprobó visualmente el menú. La comprobación local informativa del compilador reportó un fallo, aunque la validación live no informó problemas.
+
 ## 2026-11-13 — Primera base de Cultivo
 
 - Se creó el modelo SQL de metas y registros de cultivo en el esquema de desarrollo; su comprobación pasó según el estado documentado.
