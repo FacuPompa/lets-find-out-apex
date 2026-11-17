@@ -202,3 +202,13 @@ Se confirmó en navegador que el objetivo de Cultivo se muestra en horas y minut
 Se preparó la presentación del avance y puntaje de metas semanales de cada persona en el progreso compartido. Una prueba con sesión APEX y datos temporales verificó el resultado proporcional y el caso sin metas para personas distintas; la validación live pasó. Se importó con autorización y se confirmó que la pantalla usa la vista correspondiente. Falta prueba en navegador.
 
 Se confirmó en navegador que tres metas completadas de tres muestran cinco puntos en el progreso semanal.
+
+### 16/11/2026 — Corrección de cargas de cronómetro
+
+Se implementó una primera versión para corregir duración y categoría de cargas con día personal, conservando los originales y el historial. La prueba SQL con datos temporales verificó aislamiento, versiones desactualizadas, cambios de categoría, asignación de Cultivo, descarte de exceso y actualización de constancia y cierre. Las comprobaciones anteriores y la validación live pasaron; se importó directamente según la instrucción recibida y se confirmaron las páginas, procesos y objetos. Falta la prueba en navegador; las sesiones manuales y cargas anteriores sin día necesitan un recorrido separado.
+
+Se preparó un recorrido que primero distingue categorías y actividades, agrega cargas manuales de Trabajo, Estudio u Ocio sin iniciar un cronómetro y permite corregir sesiones manuales de Cultivo. Las pruebas SQL comprobaron las cargas, el aislamiento, el historial, las versiones, los cierres, la constancia y el descarte de excedentes. La validación live pasó y se importó a desarrollo; se confirmaron las páginas, procesos y objetos válidos. Falta la prueba en navegador.
+
+### 17/11/2026 — Comprobación de recorridos
+
+Se confirmó que los recorridos de carga manual y corrección funcionan en navegador. La comprobación de aislamiento entre las dos cuentas reales sigue pendiente.

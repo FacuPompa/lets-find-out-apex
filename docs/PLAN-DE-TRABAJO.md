@@ -10,7 +10,7 @@ Actualizado: 14/11/2026. Esta lista divide las necesidades conocidas en entregas
 4. [ ] Comprobar el aislamiento de cuentas, incluidos intentos de modificar datos ajenos.
 5. [x] Crear y completar metas semanales personales y mostrar su avance.
 6. [ ] Definir el puntaje de metas semanales cuando no hay metas; el cálculo proporcional con metas ya está implementado y probado.
-7. [ ] Permitir corregir registros sin perder el historial y reflejar las correcciones en los resúmenes.
+7. [ ] Completar y probar la corrección de registros: se importaron cargas y correcciones manuales. Faltan probarlas en navegador y definir el recorrido de cargas antiguas sin día.
 8. [ ] Definir y construir la reapertura o corrección de días cerrados.
 9. [ ] Definir qué hacer con los intervalos anteriores que no tienen día asignado.
 10. [ ] Completar los puntos semanales: trabajo y estudio se probaron en navegador; la constancia semanal está probada en SQL e importada. Faltan prueba en navegador y definir la presentación del cierre.

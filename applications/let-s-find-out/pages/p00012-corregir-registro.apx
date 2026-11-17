@@ -1,0 +1,267 @@
+page 12 (
+    name: Corregir registro
+    alias: CORREGIR-REGISTRO
+    title: Corregir registro
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    javaScript {
+        executeWhenPageLoads:
+            ```javascript
+            (() => {
+              const categoria = apex.item('P12_CATEGORIA');
+              const actividad = apex.item('P12_META');
+              const mostrar = () => {
+                if (categoria.getValue() === 'CULTIVO') actividad.show(); else actividad.hide();
+              };
+              document.getElementById('P12_CATEGORIA').addEventListener('change', mostrar);
+              mostrar();
+            })();
+            ```
+    }
+    region correccion (
+        name: Corregir tiempo
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>Indicá la duración y categoría correctas. Si elegís Cultivo para un registro de cronómetro, seleccioná una actividad de la semana del registro. Las cargas manuales de Cultivo se gestionan por actividad. El cambio actualiza el progreso y conserva el historial.</p>
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P12_ID (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @correccion
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P12_VERSION (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @correccion
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P12_CATEGORIA (
+        type: selectList
+        label {
+            label: Categoría
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select 'Trabajo' d,'TRABAJO' r from dual union all
+                select 'Estudio','ESTUDIO' from dual union all
+                select 'Ocio','OCIO' from dual union all
+                select 'Cultivo','CULTIVO' from dual where to_number(:P12_ID)>0
+                ```
+        }
+        layout {
+            sequence: 30
+            region: @correccion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    pageItem P12_HORAS (
+        type: numberField
+        label {
+            label: Horas
+        }
+        layout {
+            sequence: 40
+            region: @correccion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    pageItem P12_MINUTOS (
+        type: numberField
+        label {
+            label: Minutos
+        }
+        layout {
+            sequence: 50
+            region: @correccion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    pageItem P12_SEGUNDOS (
+        type: numberField
+        label {
+            label: Segundos
+        }
+        layout {
+            sequence: 60
+            region: @correccion
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
+        }
+        validation {
+            valueRequired: true
+        }
+    )
+    pageItem P12_META (
+        type: selectList
+        label {
+            label: Actividad de Cultivo (solo si corresponde)
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select m.nombre d,m.id r from lfo_metas_cultivo m
+                join lfo_tiempo_actual_v r on r.id=to_number(:P12_ID)
+                  and r.persona=lfo_persona_actual and m.persona=r.persona
+                  and m.semana_inicio=trunc(r.fecha_logica,'IW')
+                order by m.nombre,m.id
+                ```
+            displayNullValue: true
+            nullDisplayValue: Elegí una actividad
+        }
+        layout {
+            sequence: 70
+            region: @correccion
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    button guardar (
+        buttonName: GUARDAR
+        label: Guardar corrección
+        layout {
+            sequence: 80
+            region: @correccion
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+    process cargar (
+        name: Cargar registro propio
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    r lfo_tiempo_actual_v%rowtype;
+                    v_segundos number;
+                begin
+                    select * into r from lfo_tiempo_actual_v
+                    where id=to_number(:P12_ID) and persona=lfo_persona_actual and dia_id is not null;
+                    v_segundos := greatest(1,round(r.segundos));
+                    :P12_VERSION := r.version;
+                    :P12_CATEGORIA := r.categoria;
+                    :P12_HORAS := floor(v_segundos/3600);
+                    :P12_MINUTOS := floor(mod(v_segundos,3600)/60);
+                    :P12_SEGUNDOS := mod(v_segundos,60);
+                    :P12_META := r.meta_id;
+                exception when no_data_found then
+                    raise_application_error(-20194,'El registro no está disponible para tu cuenta o no tiene un día asignado.');
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+    )
+    process guardar (
+        name: Guardar corrección
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    h number:=apex_session_state.get_number('P12_HORAS');
+                    m number:=apex_session_state.get_number('P12_MINUTOS');
+                    s number:=apex_session_state.get_number('P12_SEGUNDOS');
+                begin
+                    if h is null or m is null or s is null or h<0 or m<0 or m>=60 or s<0 or s>=60
+                       or h!=trunc(h) or m!=trunc(m) or s!=trunc(s) then
+                        raise_application_error(-20197,'Indicá horas enteras y minutos y segundos entre 0 y 59.');
+                    end if;
+                    if to_number(:P12_ID)<0 then
+                        lfo_tiempo_manual_api.corregir(to_number(:P12_ID),to_number(:P12_VERSION),:P12_CATEGORIA,h*3600+m*60+s);
+                    else
+                        lfo_correccion_tiempo.corregir(to_number(:P12_ID),to_number(:P12_VERSION),:P12_CATEGORIA,
+                          h*3600+m*60+s,case when :P12_CATEGORIA='CULTIVO' then to_number(:P12_META) end);
+                    end if;
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @guardar
+        }
+        successMessage {
+            successMessage: Registro corregido.
+        }
+    )
+    branch volver (
+        name: Volver a mis registros
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 11
+                clearCache: 11
+            }
+        }
+    )
+)

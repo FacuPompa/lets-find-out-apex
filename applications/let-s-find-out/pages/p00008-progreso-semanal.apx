@@ -84,7 +84,7 @@ page 8 (
                             v_html := v_html || '<p>Metas semanales: <strong>' || v_metas_completadas || ' de ' || v_metas_total || ' completadas | ' || to_char(round(v_metas_puntos,2),'FM990D00') || ' de 5 puntos</strong></p>';
                         end if;
                     end loop;
-                    return v_html || '<p>El objetivo de Cultivo suma los mínimos de cada actividad multiplicados por sus veces semanales. Los puntos son parciales: se calculan Trabajo y Estudio con objetivo, Constancia y Metas semanales. Un día activo requiere una hora de Trabajo o Estudio, por separado. El tiempo proviene de cronómetros asociados a un día personal; no incluye intervalos anteriores sin día ni sesiones manuales de Cultivo.</p>';
+                    return v_html || '<p>El objetivo de Cultivo suma los mínimos de cada actividad multiplicados por sus veces semanales. Los puntos son parciales: se calculan Trabajo y Estudio con objetivo, Constancia y Metas semanales. Un día activo requiere una hora de Trabajo o Estudio, por separado. El tiempo incluye cargas manuales y de cronómetros con día personal; no incluye intervalos anteriores sin día ni sesiones manuales de Cultivo.</p>';
                 end;
                 ```
         }

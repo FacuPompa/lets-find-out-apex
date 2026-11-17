@@ -2,7 +2,7 @@
 
 Aplicación en desarrollo con Oracle APEX 26.1 y Oracle Autonomous Database. Este repositorio contiene la especificación, el modelo de datos, pruebas SQL y la exportación APEXlang de desarrollo.
 
-En desarrollo hay metas de Cultivo integradas con el cronómetro, cierre diario básico y objetivos de horas con progreso semanal. Faltan permitir correcciones y completar las pruebas de permisos entre cuentas. El proyecto todavía no está listo para uso real.
+En desarrollo hay metas de Cultivo integradas con el cronómetro, cargas manuales, correcciones, cierre diario básico y objetivos de horas con progreso semanal. Faltan probar las correcciones en navegador, resolver los registros anteriores sin día y completar las pruebas de permisos entre cuentas. El proyecto todavía no está listo para uso real.
 
 - [Estado y próximos pasos](LEEME-PRIMERO.md)
 - [Especificación de metas de cultivo](docs/especificaciones/001-metas-de-cultivo.md)
