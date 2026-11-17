@@ -9,14 +9,14 @@ Actualizado: 14/11/2026. Esta lista divide las necesidades conocidas en entregas
 3. [ ] Probar objetivos y progreso semanal con ambas cuentas.
 4. [ ] Comprobar el aislamiento de cuentas, incluidos intentos de modificar datos ajenos.
 5. [x] Crear y completar metas semanales personales y mostrar su avance.
-6. [ ] Definir el puntaje de metas semanales cuando no hay metas; el cálculo proporcional con metas ya está implementado y probado.
+6. [x] Exigir al menos una meta semanal y una actividad de Cultivo para el cierre.
 7. [ ] Completar y probar la corrección de registros: se importaron cargas y correcciones manuales. Faltan probarlas en navegador y definir el recorrido de cargas antiguas sin día.
 8. [ ] Definir y construir la reapertura o corrección de días cerrados.
 9. [ ] Definir qué hacer con los intervalos anteriores que no tienen día asignado.
 10. [ ] Completar los puntos semanales: trabajo y estudio se probaron en navegador; la constancia semanal está probada en SQL e importada. Faltan prueba en navegador y definir la presentación del cierre.
-11. [ ] Definir el saldo del banco de ocio y calcular sus puntos.
-12. [ ] Definir y calcular los puntos de metas de Cultivo.
-13. [ ] Implementar cierre y comparación semanal, incluidos premios y empates.
+11. [x] Calcular el saldo de ocio y sus puntos según el exceso del objetivo.
+12. [x] Calcular los puntos de Cultivo por proporción de cumplimientos sobre el total previsto.
+13. [ ] Probar con ambas cuentas la comparación semanal, incluidos premios, empate y reconfirmación; definir el caso de objetivos de horas ausentes. El cierre individual se probó en navegador.
 14. [ ] Implementar el recuento mensual por promedio semanal, premios y empates.
 15. [ ] Identificar y mejorar el aviso de confirmación o salida informado en navegador.
 

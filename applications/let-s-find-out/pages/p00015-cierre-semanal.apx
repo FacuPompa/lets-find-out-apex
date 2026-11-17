@@ -1,0 +1,207 @@
+page 15 (
+    name: Cierre semanal
+    alias: CIERRE-SEMANAL
+    title: Cierre semanal
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    region resultados (
+        name: Cierre de la semana
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                    v_semana date:=to_date(nvl(apex_util.get_preference('LFO_SEMANA',:APP_USER),
+                      to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date),'IW'),'YYYY-MM-DD')),'FXYYYY-MM-DD');
+                    v_html clob:='<p>Semana del <strong>'||to_char(v_semana,'DD/MM/YYYY')||' al '||to_char(v_semana+6,'DD/MM/YYYY')||'</strong>.</p>';
+                    v_cerrados number:=0; v_personas number:=0; v_cambiados number:=0;
+                    v_mayor number:=null; v_ganador varchar2(4); v_empate boolean:=false;
+                begin
+                    v_html:=v_html||'<p>Confirmá tu resultado cuando hayas terminado. Si corregís tiempos u objetivos después, volvé a confirmarlo.</p><ul>';
+                    for x in (
+                      select personas.persona,c.id,c.puntos_total,c.premio,p.puntos_totales,
+                        case when c.id is not null and p.puntos_totales is not null
+                          and c.puntos_trabajo=round(p.puntos_trabajo) and c.puntos_estudio=round(p.puntos_estudio)
+                          and c.puntos_constancia=round(p.puntos_constancia) and c.puntos_ocio=round(p.puntos_ocio)
+                          and c.puntos_cultivo=round(p.puntos_cultivo) and c.puntos_metas=round(p.puntos_metas_semanales)
+                          then 'N' else 'S' end cambio
+                      from (select distinct persona from lfo_cuentas_persona) personas
+                      left join lfo_cierre_semanal_actual_v c on c.persona=personas.persona and c.semana_inicio=v_semana
+                      left join lfo_puntos_semanales_v p on p.persona=personas.persona and p.semana_inicio=v_semana
+                      order by personas.persona
+                    ) loop
+                      v_personas:=v_personas+1;
+                      v_html:=v_html||'<li><strong>'||apex_escape.html(x.persona)||':</strong> ';
+                      if x.id is null then v_html:=v_html||'Todavía no confirmó.';
+                      else
+                        v_cerrados:=v_cerrados+1;
+                        v_html:=v_html||x.puntos_total||' de 30 puntos confirmados';
+                        if x.premio is not null then v_html:=v_html||' | Premio: '||apex_escape.html(x.premio); end if;
+                        if x.cambio='S' then
+                          v_cambiados:=v_cambiados+1;
+                          v_html:=v_html||' | Cambiaron los datos: falta volver a confirmar.';
+                        end if;
+                        if v_mayor is null or x.puntos_total>v_mayor then
+                          v_mayor:=x.puntos_total; v_ganador:=x.persona; v_empate:=false;
+                        elsif x.puntos_total=v_mayor then v_empate:=true; end if;
+                      end if;
+                      v_html:=v_html||'</li>';
+                    end loop;
+                    v_html:=v_html||'</ul>';
+                    if v_personas=2 and v_cerrados=2 and v_cambiados=0 then
+                      if v_empate then v_html:=v_html||'<p><strong>Empate: ambas personas reciben su premio semanal.</strong></p>';
+                      else v_html:=v_html||'<p><strong>Ganó '||apex_escape.html(v_ganador)||'.</strong></p>'; end if;
+                    else
+                      v_html:=v_html||'<p>El resultado compartido aparecerá cuando ambas personas confirmen y sus datos estén actualizados.</p>';
+                    end if;
+                    return v_html;
+                end;
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    region confirmar (
+        name: Mi cierre
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>El premio es opcional. Para confirmar necesitás objetivos de Trabajo, Estudio y Ocio, al menos una meta semanal y una actividad de Cultivo, y no tener tiempo de la semana sin registrar.</p>
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P15_SEMANA (
+        type: hidden
+        layout {
+            sequence: 10
+            region: @confirmar
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P15_VERSION (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @confirmar
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P15_PREMIO (
+        type: textField
+        label {
+            label: Mi premio semanal (opcional)
+        }
+        layout {
+            sequence: 30
+            region: @confirmar
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    button confirmar (
+        buttonName: CONFIRMAR
+        label: Confirmar mi cierre
+        layout {
+            sequence: 40
+            region: @confirmar
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            requiresConfirmation: true
+            warnOnUnsavedChanges: doNotCheck
+        }
+        confirmation {
+            message: ¿Querés confirmar tu puntaje y premio para esta semana? Si ya habías confirmado, se guardará una nueva versión.
+        }
+    )
+    process preparar (
+        name: Preparar mi cierre semanal
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                    v_semana date:=to_date(nvl(apex_util.get_preference('LFO_SEMANA',:APP_USER),
+                      to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date),'IW'),'YYYY-MM-DD')),'FXYYYY-MM-DD');
+                begin
+                    :P15_SEMANA:=to_char(v_semana,'YYYY-MM-DD');
+                    select nvl(max(id),0), max(premio) keep (dense_rank last order by id)
+                    into :P15_VERSION,:P15_PREMIO from lfo_cierres_semanales
+                    where persona=lfo_persona_actual and semana_inicio=v_semana;
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+    )
+    process guardar (
+        name: Confirmar mi cierre semanal
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_cierre_semanal.confirmar(to_date(:P15_SEMANA,'FXYYYY-MM-DD'),to_number(:P15_VERSION),:P15_PREMIO);
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @confirmar
+        }
+        successMessage {
+            successMessage: Cierre semanal confirmado.
+        }
+    )
+    branch volver (
+        name: Ver cierre semanal
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 15
+                clearCache: 15
+            }
+        }
+    )
+)
