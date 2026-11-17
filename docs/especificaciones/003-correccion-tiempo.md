@@ -1,6 +1,6 @@
 # 003 — Corrección de tiempo registrado
 
-**Estado:** la corrección por categoría o actividad y la carga manual están importadas a desarrollo; falta probar los recorridos en navegador.
+**Estado:** la corrección por categoría o actividad y la carga manual están importadas a desarrollo; se informó que los recorridos funcionan en navegador.
 
 ## Objetivo
 
@@ -20,6 +20,6 @@ El recorrido empieza por elegir una categoría de Trabajo, Estudio u Ocio o una 
 
 ## Verificación
 
-Las pruebas SQL `018_correccion_tiempo.sql`, `019_tiempo_manual.sql` y `020_correccion_cultivo_manual.sql` pasaron con datos temporales y rollback. La pantalla ampliada pasó validación live, se importó a desarrollo y se verificaron sus páginas, procesos y objetos. Falta la prueba en navegador.
+Las pruebas SQL `018_correccion_tiempo.sql`, `019_tiempo_manual.sql` y `020_correccion_cultivo_manual.sql` pasaron con datos temporales y rollback. La pantalla ampliada pasó validación live, se importó a desarrollo y se verificaron sus páginas, procesos y objetos. Se informó que los recorridos funcionan en navegador; falta comprobar el aislamiento entre ambas cuentas reales.
 
 No se cambian los intervalos físicos ni se vuelve a registrar tiempo pendiente. Las cargas históricas sin día personal necesitan un recorrido propio y no se asignan automáticamente. Una carga manual de Trabajo, Estudio u Ocio se corrige entre esas categorías; para Cultivo se usa el registro por actividad. Un cambio hacia Cultivo respeta el límite de la meta y el descarte de excesos. La propiedad, la actividad, los valores y las versiones se verifican en el servidor.
