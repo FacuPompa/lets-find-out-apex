@@ -10,6 +10,8 @@ Se corrigió el aviso nativo al usar los botones de elegir semana y guardar sesi
 
 Se confirmó en navegador que los botones de selección de semana y registro funcionan sin el aviso nativo.
 
+Se revisó el aislamiento de cuentas. La prueba `030_aislamiento_metas_semanales.sql` comprobó con cuentas temporales que cada persona puede modificar su meta semanal y no la de la otra, en ambos sentidos; también rechazó una cuenta sin vincular. Los datos se revirtieron. La comprobación `004_cuentas_persona.sql` volvió a pasar. Sigue pendiente una prueba completa desde las pantallas con ambas cuentas reales.
+
 ## 2026-11-18 — Correcciones del día anterior
 
 Se incorporó la carga y corrección de datos del día calendario anterior sin reabrirlo. Los registros manuales nuevos de Cultivo se vinculan al día y actualizan su resumen; el lunes no se corrige el domingo y una semana cerrada no admite cambios en los recorridos protegidos. Las pruebas `028_correcciones_dia_anterior.sql` verificaron límites, cargas, resumen, Cultivo, aislamiento, metas y bloqueo del cronómetro con rollback. La regresión `027_resultados_mensuales.sql` volvió a pasar. La validación live e importación de APEX finalizaron correctamente; la comprobación local informativa del compilador sigue reportando diferencias de metadatos. Falta comprobar el recorrido en navegador.
