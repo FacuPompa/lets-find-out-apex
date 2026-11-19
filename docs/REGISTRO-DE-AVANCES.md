@@ -2,6 +2,14 @@
 
 Entradas breves para cambios relevantes. El estado actual y los próximos pasos están en `../LEEME-PRIMERO.md`; las reglas están en las especificaciones. No registrar secretos ni datos personales innecesarios.
 
+## 2026-11-19 — Cultivo manual en el día personal
+
+Se vincularon las sesiones manuales nuevas al día personal abierto para incluir su tiempo en el resumen, el cierre y el progreso semanal, sin reasignar sesiones antiguas. La fecha propuesta sigue el día abierto; si se selecciona otra fecha actual mientras hay un día previo abierto, se pide corregir la fecha o cerrar el día. La prueba `029_cultivo_manual_dia_actual.sql` verificó acumulación, cierre, corrección, aislamiento y día abierto después de medianoche con rollback; la regresión `028` también pasó. La validación live y la importación de APEX fueron correctas; la comprobación local informativa continúa reportando diferencias de metadatos. Falta verificar el recorrido en navegador.
+
+Se corrigió el aviso nativo al usar los botones de elegir semana y guardar sesión. Al seleccionar otra semana se conservan los minutos y la fecha escritos y se limpia la actividad de la semana anterior. La validación live y la importación pasaron y se verificaron los ajustes instalados; falta la comprobación en navegador.
+
+Se confirmó en navegador que los botones de selección de semana y registro funcionan sin el aviso nativo.
+
 ## 2026-11-18 — Correcciones del día anterior
 
 Se incorporó la carga y corrección de datos del día calendario anterior sin reabrirlo. Los registros manuales nuevos de Cultivo se vinculan al día y actualizan su resumen; el lunes no se corrige el domingo y una semana cerrada no admite cambios en los recorridos protegidos. Las pruebas `028_correcciones_dia_anterior.sql` verificaron límites, cargas, resumen, Cultivo, aislamiento, metas y bloqueo del cronómetro con rollback. La regresión `027_resultados_mensuales.sql` volvió a pasar. La validación live e importación de APEX finalizaron correctamente; la comprobación local informativa del compilador sigue reportando diferencias de metadatos. Falta comprobar el recorrido en navegador.

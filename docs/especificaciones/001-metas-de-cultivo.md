@@ -46,4 +46,6 @@ La asignación administrativa vincula una cuenta APEX con un código de persona 
 
 ## Integración acumulativa
 
+Las sesiones manuales nuevas también se vinculan al día personal y aportan su duración al resumen, cierre y progreso semanal. La fecha propuesta corresponde al día abierto, incluso si sigue abierto después de medianoche; no se reasignan registros históricos. `025_cultivo_manual_dia_actual.sql` está instalado y pasó `029_cultivo_manual_dia_actual.sql`; la pantalla pasó validación live, se importó y se informó que el recorrido funciona.
+
 La migración `010_cultivo_acumulado.sql` agrega registros vinculados sin modificar los anteriores. Las sesiones manuales nuevas y los intervalos nuevos del cronómetro se acumulan por actividad; se contabilizan múltiplos del mínimo hasta alcanzar la meta y el tiempo excedente posterior se conserva para el registro de horas, pero no se recupera para cumplimientos futuros. La vista nueva preserva los resultados de las sesiones anteriores. La elección y escritura comprueban la cuenta y la semana del día personal; el tiempo sin día o de otra semana no se asigna automáticamente. La prueba SQL `012_cultivo_acumulado.sql` pasó con rollback y la aplicación se importó a desarrollo. Se confirmaron en navegador la acumulación y la pausa; falta la prueba visual del aviso cercano.
