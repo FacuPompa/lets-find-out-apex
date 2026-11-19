@@ -1,6 +1,12 @@
 # 003 — Corrección de tiempo registrado
 
-**Estado:** la corrección por categoría o actividad y la carga manual están importadas a desarrollo; se informó que los recorridos funcionan en navegador.
+**Estado:** la corrección por categoría o actividad y la carga manual están importadas a desarrollo. La ampliación para el día anterior pasó pruebas SQL; se comprobaron en navegador la carga y corrección de Ocio. Falta comprobar el recorrido de Cultivo.
+
+## Correcciones del día anterior
+
+El día permanece cerrado. Cada persona podrá añadir tiempo olvidado y corregir sus registros del día calendario anterior, además de continuar usando su día personal abierto. Se incluyen los registros de Cultivo y crear o marcar metas semanales olvidadas. El lunes no se corrige el domingo; una semana cerrada no se puede modificar. Los cambios deberán actualizar el resumen y el progreso correspondiente y conservar el historial. El límite debe verificarse en el servidor y no solo en la pantalla.
+
+La validación se aplica en la base a las correcciones, cargas y metas semanales. La carga manual de Cultivo de ayer se vincula al día y actualiza su resumen sin reasignar registros históricos. Una cuenta no puede modificar registros ajenos. La aplicación permite elegir ayer al cargar tiempo; para Cultivo se elige la fecha en el registro por actividad. Los límites, el resumen, el aislamiento y el bloqueo por cierre pasaron las pruebas SQL `028_correcciones_dia_anterior.sql`. Se comprobó visualmente la carga y corrección de Ocio; queda pendiente el recorrido de Cultivo.
 
 ## Objetivo
 

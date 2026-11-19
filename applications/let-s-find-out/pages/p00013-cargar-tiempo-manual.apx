@@ -18,8 +18,7 @@ page 13 (
             plsqlFunctionBody:
                 ```plsql
                 begin
-                    return '<p>El tiempo se agregará a tu día personal: <strong>' || to_char(to_date(:P13_FECHA,'FXYYYY-MM-DD'),'DD/MM/YYYY') ||
-                      '</strong>. Para Cultivo usá el registro por actividad.</p>';
+                    return '<p>Elegí tu día personal actual o ayer para cargar tiempo olvidado. Tu día cerrado permanece cerrado. Para Cultivo usá el registro por actividad.</p>';
                 end;
                 ```
         }
@@ -52,6 +51,45 @@ page 13 (
         }
         security {
             sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P13_AYER (
+        type: hidden
+        layout {
+            sequence: 7
+            region: @carga
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    pageItem P13_DESTINO (
+        type: selectList
+        label {
+            label: ¿A qué día corresponde?
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select d,r from (
+                select 'Mi día personal actual' d, 'ACTUAL' r, 1 orden from dual
+                union all
+                select 'Ayer (' || to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date))-1,'DD/MM/YYYY') || ')', 'AYER', 2
+                from dual
+                where trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date))-1 !=
+                      trunc(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date))-1,'IW')+6
+                ) order by orden
+                ```
+        }
+        layout {
+            sequence: 8
+            region: @carga
+            slot: regionBody
+        }
+        appearance {
+            template: @/required-floating
         }
     )
     pageItem P13_CATEGORIA (
@@ -152,6 +190,7 @@ page 13 (
                     select max(fecha_logica),max(id) into v_fecha,:P13_DIA from lfo_dias_personales
                     where persona=lfo_persona_actual and cerrado_en is null;
                     :P13_FECHA:=to_char(nvl(v_fecha,trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date))),'YYYY-MM-DD');
+                    :P13_AYER:=to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date))-1,'YYYY-MM-DD');
                 end;
                 ```
         }
@@ -174,7 +213,13 @@ page 13 (
                     if h<0 or m<0 or m>=60 or s<0 or s>=60 or h!=trunc(h) or m!=trunc(m) or s!=trunc(s) then
                         raise_application_error(-20197,'Indicá horas enteras y minutos y segundos entre 0 y 59.');
                     end if;
-                    lfo_tiempo_manual_api.crear(:P13_CATEGORIA,h*3600+m*60+s,to_date(:P13_FECHA,'FXYYYY-MM-DD'),to_number(:P13_DIA));
+                    if :P13_DESTINO='AYER' then
+                        lfo_carga_dia_anterior.crear(:P13_CATEGORIA,h*3600+m*60+s,to_date(:P13_AYER,'FXYYYY-MM-DD'));
+                    elsif :P13_DESTINO='ACTUAL' then
+                        lfo_tiempo_manual_api.crear(:P13_CATEGORIA,h*3600+m*60+s,to_date(:P13_FECHA,'FXYYYY-MM-DD'),to_number(:P13_DIA));
+                    else
+                        raise_application_error(-20246,'Elegí el día al que corresponde el tiempo.');
+                    end if;
                 end;
                 ```
         }

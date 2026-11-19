@@ -1,0 +1,283 @@
+page 16 (
+    name: Recuento mensual
+    alias: RECUENTO-MENSUAL
+    title: Recuento mensual
+    appearance {
+        pageTemplate: @/standard
+        templateOptions: #DEFAULT#
+    }
+    security {
+        authentication: required
+        pageAccessProtection: argumentsMustHaveChecksum
+        formAutoComplete: false
+    }
+    css {
+        inline:
+            ```css
+            .lfo-mes-tabla { overflow-x: auto; }
+            .lfo-mes-tabla table { width: 100%; min-width: 600px; }
+            .lfo-mes-tabla th, .lfo-mes-tabla td { padding: 12px 16px; }
+            ```
+    }
+    region mes (
+        name: Elegir mes
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>Elegí el mes que querés consultar. La selección es personal.</p>
+                ```
+        }
+        layout {
+            sequence: 10
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P16_FECHA (
+        type: selectList
+        label {
+            label: Mes
+        }
+        lov {
+            type: sqlQuery
+            sqlQuery:
+                ```sql
+                select initcap(trim(to_char(mes,'Month','NLS_DATE_LANGUAGE=SPANISH'))) || ' ' || to_char(mes,'YYYY') d,
+                       to_char(mes,'YYYY-MM-DD') r
+                from (
+                  select add_months(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date),'YYYY'),level-1) mes
+                  from dual connect by level<=12
+                )
+                order by mes
+                ```
+        }
+        layout {
+            sequence: 10
+            region: @mes
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    pageItem P16_MES (
+        type: hidden
+        layout {
+            sequence: 20
+            region: @mes
+            slot: regionBody
+        }
+        security {
+            sessionStateProtection: checksumRequiredSessionLevel
+        }
+    )
+    button elegir-mes (
+        buttonName: ELEGIR_MES
+        label: Ver este mes
+        layout {
+            sequence: 30
+            region: @mes
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+        }
+        behavior {
+            executeValidations: false
+        }
+    )
+    region recuento (
+        name: Resultado del mes
+        type: dynamicContent
+        source {
+            plsqlFunctionBody:
+                ```plsql
+                declare
+                  v_mes date:=to_date(nvl(apex_util.get_preference('LFO_MES',:APP_USER),
+                    to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date),'MM'),'YYYY-MM-DD')),'FXYYYY-MM-DD');
+                  v_lunes date:=trunc(v_mes,'IW')+case when trunc(v_mes,'IW')<v_mes then 7 else 0 end;
+                  v_esperadas number:=floor((last_day(v_mes)-v_lunes)/7)+1;
+                  v_comparables number:=0; v_bri number; v_facu number;
+                  v_prom_bri number; v_prom_facu number; v_premio varchar2(500);
+                  v_html clob:='<p>Mes: <strong>'||to_char(v_mes,'MM/YYYY')||'</strong>. Cada semana cuenta en el mes donde cae su lunes.</p>';
+                begin
+                  v_html:=v_html||'<div class="t-Report lfo-mes-tabla"><table class="t-Report-report"><thead><tr><th scope="col">Semana</th><th scope="col">BRI</th><th scope="col">FACU</th><th scope="col">Resultado</th></tr></thead><tbody>';
+                  for sem in (select v_lunes+(level-1)*7 inicio from dual connect by v_lunes+(level-1)*7<add_months(v_mes,1)) loop
+                    select max(case when persona='BRI' and vigente='S' then puntos_total end),
+                           max(case when persona='FACU' and vigente='S' then puntos_total end)
+                    into v_bri,v_facu from lfo_estado_cierres_semanales_v where semana_inicio=sem.inicio;
+                    v_html:=v_html||'<tr><td>'||to_char(sem.inicio,'DD/MM')||' al '||to_char(sem.inicio+6,'DD/MM')||'</td><td>'||
+                      case when v_bri is null then 'Pendiente' else to_char(v_bri)||' de 30' end||'</td><td>'||
+                      case when v_facu is null then 'Pendiente' else to_char(v_facu)||' de 30' end||'</td><td>';
+                    if v_bri is null or v_facu is null then v_html:=v_html||'Pendiente';
+                    else
+                      v_comparables:=v_comparables+1;
+                      if v_bri=v_facu then v_html:=v_html||'Empate';
+                      elsif v_bri>v_facu then v_html:=v_html||'BRI'; else v_html:=v_html||'FACU'; end if;
+                    end if;
+                    v_html:=v_html||'</td></tr>';
+                  end loop;
+                  v_html:=v_html||'</tbody></table></div><p>Semanas confirmadas por ambas personas: <strong>'||v_comparables||' de '||v_esperadas||'</strong>.</p>';
+                  for persona in (select distinct persona from lfo_cuentas_persona order by persona) loop
+                    select max(puntos_mensuales) into v_bri from lfo_progreso_mensual_v where persona=persona.persona and mes_inicio=v_mes;
+                    select max(premio) into v_premio from lfo_premios_mensuales where persona=persona.persona and mes_inicio=v_mes;
+                    v_html:=v_html||'<p><strong>'||apex_escape.html(persona.persona)||':</strong> '||
+                      case when v_bri is null then 'Sin promedio todavía' when v_comparables<v_esperadas then 'Promedio parcial: '||to_char(v_bri)||' puntos' else 'Promedio: '||to_char(v_bri)||' puntos' end;
+                    if v_premio is not null then v_html:=v_html||' | Premio: '||apex_escape.html(v_premio); end if;
+                    v_html:=v_html||'</p>';
+                  end loop;
+                  select max(case when persona='BRI' then puntos_mensuales end),max(case when persona='FACU' then puntos_mensuales end)
+                    into v_prom_bri,v_prom_facu from lfo_progreso_mensual_v where mes_inicio=v_mes;
+                  if v_comparables=v_esperadas and v_prom_bri is not null and v_prom_facu is not null then
+                    if v_prom_bri=v_prom_facu then v_html:=v_html||'<p><strong>Empate mensual: ambas personas reciben su premio mensual y el premio de la semana correspondiente.</strong></p>';
+                    elsif v_prom_bri>v_prom_facu then v_html:=v_html||'<p><strong>Ganó BRI el mes.</strong></p>';
+                    else v_html:=v_html||'<p><strong>Ganó FACU el mes.</strong></p>'; end if;
+                  else
+                    v_html:=v_html||'<p>El resultado mensual será definitivo cuando ambas personas confirmen todas las semanas del mes.</p>';
+                  end if;
+                  return v_html;
+                end;
+                ```
+        }
+        layout {
+            sequence: 20
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    region premio (
+        name: Mi premio mensual
+        type: staticContent
+        source {
+            htmlCode:
+                ```html
+                <p>Escribí qué querés recibir si ganás el mes.</p>
+                ```
+        }
+        layout {
+            sequence: 30
+            slot: body
+        }
+        appearance {
+            template: @/standard
+            templateOptions: #DEFAULT#
+        }
+    )
+    pageItem P16_PREMIO (
+        type: textField
+        label {
+            label: Mi premio mensual
+        }
+        layout {
+            sequence: 10
+            region: @premio
+            slot: regionBody
+        }
+        appearance {
+            template: @/optional-floating
+        }
+    )
+    button guardar (
+        buttonName: GUARDAR
+        label: Guardar mi premio
+        layout {
+            sequence: 20
+            region: @premio
+            slot: create
+        }
+        appearance {
+            buttonTemplate: @/text
+            hot: true
+        }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
+    )
+    process preparar (
+        name: Preparar mes y premio
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                declare
+                  v_mes date:=to_date(nvl(apex_util.get_preference('LFO_MES',:APP_USER),
+                    to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date),'MM'),'YYYY-MM-DD')),'FXYYYY-MM-DD');
+                begin
+                  if trunc(v_mes,'YYYY')!=trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date),'YYYY') then
+                    v_mes:=trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date),'MM');
+                    apex_util.set_preference('LFO_MES',to_char(v_mes,'YYYY-MM-DD'),:APP_USER);
+                  end if;
+                  :P16_MES:=to_char(v_mes,'YYYY-MM-DD');
+                  :P16_FECHA:=:P16_MES;
+                  select max(premio) into :P16_PREMIO from lfo_premios_mensuales
+                  where persona=lfo_persona_actual and mes_inicio=v_mes;
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: beforeHeader
+        }
+    )
+    process elegir-mes (
+        name: Guardar mes seleccionado
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                begin
+                  if :P16_FECHA is null then raise_application_error(-20232,'Elegí un mes.'); end if;
+                  apex_util.set_preference('LFO_MES',to_char(trunc(to_date(:P16_FECHA,'FXYYYY-MM-DD'),'MM'),'YYYY-MM-DD'),:APP_USER);
+                end;
+                ```
+        }
+        execution {
+            sequence: 10
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @elegir-mes
+        }
+    )
+    process guardar-premio (
+        name: Guardar premio mensual
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_premios_mensuales_api.guardar(to_date(:P16_MES,'FXYYYY-MM-DD'),:P16_PREMIO);
+                ```
+        }
+        execution {
+            sequence: 20
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @guardar
+        }
+        successMessage {
+            successMessage: Premio mensual guardado.
+        }
+    )
+    branch volver (
+        name: Ver recuento mensual
+        execution {
+            sequence: 10
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 16
+                clearCache: 16
+            }
+        }
+    )
+)
