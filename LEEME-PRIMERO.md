@@ -1,6 +1,6 @@
 # Let's Find Out! — continuidad
 
-Actualizado: 16/11/2026. El detalle de las reglas está en las especificaciones de `docs/especificaciones/`; el historial de avances, en `docs/REGISTRO-DE-AVANCES.md`.
+Actualizado: 17/11/2026. El detalle de las reglas está en las especificaciones de `docs/especificaciones/`; el historial de avances, en `docs/REGISTRO-DE-AVANCES.md`.
 
 ## Estado actual
 
@@ -26,6 +26,8 @@ Actualizado: 16/11/2026. El detalle de las reglas está en las especificaciones 
 - Corrección de tiempo: la versión de `docs/especificaciones/003-correccion-tiempo.md` se importó a desarrollo. Permite elegir categoría o actividad, agregar tiempo manual de Trabajo, Estudio u Ocio y corregir sesiones manuales de Cultivo. Pasaron las pruebas SQL y la validación live; se informó que los recorridos funcionan en navegador. Las cargas antiguas sin día requieren otro recorrido.
 - Cierre semanal: cada persona confirma su semana independientemente; se exige al menos una meta semanal y una actividad de Cultivo. `021_cierre_semanal.sql` y la pantalla se importaron tras pasar `023_cierre_semanal.sql` y `024_cierre_semanal_pendientes.sql`. Guardan historial, premio opcional y comparación cuando ambas personas confirman; los cambios posteriores exigen reconfirmar si alteran los puntos. Se comprobó el cierre en navegador; falta probar la comparación con ambas cuentas y definir la regla definitiva para objetivos de horas ausentes. La primera versión también requiere objetivos de Trabajo, Estudio y Ocio y bloquea si hay tiempo pendiente de la semana.
 - Redondeo: se acordó redondear cada rubro al entero más cercano (0,50 hacia arriba) antes de sumar. La base pasó su prueba y las pantallas se validaron e importaron; falta comprobarlas en navegador.
+
+- Navegación: el menú lateral agrupa las pantallas en Tiempo, Metas y Progreso, con iconos diferenciados. Se validó, importó y comprobó visualmente en desarrollo.
 
 ## Próximos pasos
 
