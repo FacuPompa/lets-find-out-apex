@@ -1,6 +1,6 @@
 # Let's Find Out! — continuidad
 
-Actualizado: 18/11/2026. El detalle de las reglas está en las especificaciones de `docs/especificaciones/`; el historial de avances, en `docs/REGISTRO-DE-AVANCES.md`.
+Actualizado: 19/11/2026. El detalle de las reglas está en las especificaciones de `docs/especificaciones/`; el historial de avances, en `docs/REGISTRO-DE-AVANCES.md`.
 
 ## Estado actual
 
@@ -9,7 +9,7 @@ Actualizado: 18/11/2026. El detalle de las reglas está en las especificaciones 
 - **Personas:** hay dos cuentas APEX vinculadas a identificadores de persona. El alta y registro comprueban la propiedad y el progreso es compartido; falta probar los controles de extremo a extremo con ambas cuentas. No considerar completo el aislamiento ni usar el prototipo como producto terminado.
 - **Cronómetros:** hay cuatro categorías, un reloj activo por persona y registro incremental de intervalos. Registrar pausa el reloj. El tiempo persiste en la base y se puede asociar a actividades de Cultivo. Los colores son configurables por cuenta.
 - **Día personal:** los nuevos intervalos se asocian al día abierto, incluso después de medianoche. Se puede revisar y cerrar el día; si hay un reloj activo, se pide confirmación antes de pausarlo. El resumen guardado incluye solo el tiempo registrado; el tiempo pendiente se conserva. Se importó la corrección del día anterior sin reabrirlo, incluyendo cargas manuales y Cultivo. El lunes no se corrige el domingo y no se modifican semanas ya cerradas. Pasaron pruebas SQL y se comprobó una carga y su corrección en navegador.
-- **Progreso semanal:** cada cuenta puede establecer objetivos de horas por categoría y ver las tablas de ambas personas para su semana seleccionada. Incluye cargas manuales de Trabajo, Estudio y Ocio, intervalos de cronómetro asociados a un día y sesiones manuales nuevas de Cultivo vinculadas al día anterior; no incluye sesiones manuales anteriores de Cultivo ni intervalos anteriores sin día. Calcula los seis rubros y muestra un total provisional cuando están definidos todos los objetivos y metas. Falta comprobar los cálculos nuevos en navegador.
+- **Progreso semanal:** cada cuenta puede establecer objetivos de horas por categoría y ver las tablas de ambas personas para su semana seleccionada. Incluye cargas manuales de Trabajo, Estudio y Ocio, intervalos de cronómetro asociados a un día y nuevas sesiones manuales de Cultivo vinculadas al día actual o anterior; no incluye sesiones manuales anteriores sin vincular ni intervalos anteriores sin día. Calcula los seis rubros y muestra un total provisional cuando están definidos todos los objetivos y metas. Falta comprobar los cálculos nuevos en navegador.
 - Los avisos usan componentes de APEX. La skill local `mensajes-ui` y `AGENTS.md` documentan esta convención.
 - El repositorio remoto es público. La imagen proporcionada para el logo se incluye en la aplicación versionada; representa un personaje de una obra existente.
 - La exportación versionada omite el `checksumSalt`. El respaldo de desarrollo está fuera del repositorio. Seguir `docs/IMPORTACION-APEX.md`; no publicar valores privados, wallets ni contraseñas.
@@ -30,6 +30,8 @@ Actualizado: 18/11/2026. El detalle de las reglas está en las especificaciones 
 - El selector mensual muestra los doce meses del año actual. Por ahora no permite elegir años anteriores; los datos históricos permanecen guardados.
 - La prueba `027_resultados_mensuales.sql` comprobó con datos temporales un ganador para cada persona, empate, cierre faltante y cierre desactualizado; todo se revirtió. La comparación real en navegador se observará durante el uso.
 - Correcciones del día anterior: `024_correcciones_dia_anterior.sql` está instalado y `028_correcciones_dia_anterior.sql` pasó con rollback. La app pasó validación live y se importó. Se comprobó en navegador la carga y corrección de Ocio; la base confirmó que el día permanece cerrado y el resumen refleja la corrección. Falta comprobar el recorrido de Cultivo en navegador. Los registros históricos no se reasignan.
+- Cultivo manual del día abierto: `025_cultivo_manual_dia_actual.sql` está instalado y pasó `029_cultivo_manual_dia_actual.sql`; también pasó de nuevo la regresión `028`. Las sesiones nuevas se vinculan al día personal, se reflejan en su resumen y en el progreso semanal y conservan la fecha del día abierto. La pantalla se validó, importó y se informó que el recorrido funciona. Las sesiones antiguas no se reasignan.
+- Aviso de salida en Cultivo: se ajustaron los botones de selección de semana y registro para no mostrar el aviso nativo al guardar. Al cambiar de semana se conservan los minutos escritos y se limpia la actividad si corresponde a otra semana. La validación live y la importación pasaron; se confirmó en navegador que ambos botones funcionan sin el aviso.
 - Navegación: el menú lateral agrupa las pantallas en Tiempo, Metas y Progreso, con iconos diferenciados. Se validó, importó y comprobó visualmente en desarrollo.
 
 ## Próximos pasos

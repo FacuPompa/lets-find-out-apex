@@ -74,6 +74,7 @@ page 3 (
         }
         behavior {
             executeValidations: false
+            warnOnUnsavedChanges: doNotCheck
         }
     )
     process guardar-semana (
@@ -84,9 +85,14 @@ page 3 (
                 ```plsql
                 declare
                     semana_elegida varchar2(10);
+                    semana_anterior varchar2(10) := nvl(apex_util.get_preference('LFO_SEMANA', :APP_USER),
+                        to_char(trunc(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'IW'), 'YYYY-MM-DD'));
                 begin
                     select to_char(trunc(to_date(:P3_SEMANA, 'FXYYYY-MM-DD'), 'IW'), 'YYYY-MM-DD')
                     into semana_elegida from dual where :P3_SEMANA is not null;
+                    if semana_elegida != semana_anterior then
+                        :P3_META := null;
+                    end if;
                     apex_util.set_preference(
                         p_preference => 'LFO_SEMANA',
                         p_value => semana_elegida,
@@ -171,7 +177,13 @@ page 3 (
             type: functionBody
             plsqlFunctionBody:
                 ```plsql
-                return to_char(cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date), 'YYYY-MM-DD');
+                declare
+                    v_fecha date;
+                begin
+                    select max(fecha_logica) into v_fecha from lfo_dias_personales
+                    where persona=lfo_persona_actual and cerrado_en is null;
+                    return to_char(nvl(v_fecha,cast(systimestamp at time zone 'America/Argentina/Buenos_Aires' as date)), 'YYYY-MM-DD');
+                end;
                 ```
         }
     )
@@ -204,6 +216,9 @@ page 3 (
             buttonTemplate: @/text
             hot: true
         }
+        behavior {
+            warnOnUnsavedChanges: doNotCheck
+        }
     )
     process guardar-sesion (
         name: Guardar sesión
@@ -233,6 +248,23 @@ page 3 (
         }
         successMessage {
             successMessage: Sesión registrada.
+        }
+    )
+    branch volver-semana (
+        name: Volver a la semana elegida
+        execution {
+            sequence: 5
+            point: afterProcessing
+        }
+        behavior {
+            type: pageOrUrl
+            target: {
+                page: 3
+            }
+        }
+        serverSideCondition {
+            type: request=Value
+            value: ELEGIR_SEMANA
         }
     )
     branch volver (
