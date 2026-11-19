@@ -2,6 +2,14 @@
 
 Entradas breves para cambios relevantes. El estado actual y los próximos pasos están en `../LEEME-PRIMERO.md`; las reglas están en las especificaciones. No registrar secretos ni datos personales innecesarios.
 
+## 2026-11-18 — Correcciones del día anterior
+
+Se incorporó la carga y corrección de datos del día calendario anterior sin reabrirlo. Los registros manuales nuevos de Cultivo se vinculan al día y actualizan su resumen; el lunes no se corrige el domingo y una semana cerrada no admite cambios en los recorridos protegidos. Las pruebas `028_correcciones_dia_anterior.sql` verificaron límites, cargas, resumen, Cultivo, aislamiento, metas y bloqueo del cronómetro con rollback. La regresión `027_resultados_mensuales.sql` volvió a pasar. La validación live e importación de APEX finalizaron correctamente; la comprobación local informativa del compilador sigue reportando diferencias de metadatos. Falta comprobar el recorrido en navegador.
+
+Se comprobó desde la pantalla una carga manual de tres horas de Ocio para el día anterior. La consulta de desarrollo confirmó la fecha, que el día permanece cerrado y que el resumen incluye las tres horas. Falta comprobar en navegador la corrección y el recorrido de Cultivo.
+
+Se confirmó que la corrección funciona desde la pantalla. La base muestra el valor corregido en el resumen y conserva el día cerrado. La prueba visual de Cultivo sigue pendiente.
+
 ## 2026-11-17 — Navegación lateral
 
 Se agruparon las pantallas en Tiempo, Metas y Progreso y se diferenciaron sus iconos, conservando los accesos existentes. La validación live y la importación a desarrollo finalizaron correctamente y se comprobó visualmente el menú. La comprobación local informativa del compilador reportó un fallo, aunque la validación live no informó problemas.
@@ -228,3 +236,19 @@ Se acordó redondear cada rubro al entero más cercano, con 0,50 hacia arriba, a
 Se confirmó que cada persona cierra su semana de manera independiente y necesita al menos una meta semanal y una actividad de Cultivo. Se implementó el cierre con historial de confirmaciones, premio opcional, comparación, empate y detección de cambios posteriores. La prueba SQL comprobó metas obligatorias, independencia, versiones, historial y rechazo de tiempo pendiente; una ejecución de pantalla con datos temporales comprobó empate y detección de datos cambiados. La validación live pasó y se importó a desarrollo. La primera versión también exige objetivos de Trabajo, Estudio y Ocio; falta acordar el tratamiento de objetivos de horas ausentes y probar el recorrido en navegador.
 
 Se confirmó en navegador que el cierre semanal funciona. Quedan pendientes la comparación con ambas cuentas y la regla de objetivos de horas ausentes.
+
+### 17/11/2026 — Recuento mensual
+
+Se acordó comparar promedios mensuales redondeados y esperar los cierres vigentes de ambas personas para todas las semanas cuyo lunes pertenece al mes. Se preparó un recuento con resultados por semana, promedio parcial, premio mensual por cuenta y empate; una prueba SQL verificó semanas entre meses, redondeo e invalidación de cierres modificados. Una ejecución de pantalla con datos temporales comprobó resultado completo y pendiente. La validación live pasó, se importó a desarrollo y se confirmaron la pantalla y sus procesos. Falta la prueba en navegador; sigue sin precisar a qué semana se refiere el premio semanal en un empate mensual.
+
+Se reemplazó el selector de día por una lista de meses y años en español; incluye meses con cierres o premios guardados. Pasó validación live, se importó y se confirmó el tipo de selector. Falta la prueba en navegador.
+
+Se limitó el selector a los doce meses del año actual y se importó tras la validación live. Los datos de años anteriores se conservan, pero esta pantalla todavía no permite seleccionarlos. Falta la prueba en navegador.
+
+Se comprobó en navegador que noviembre muestra las cinco semanas correspondientes, los cierres pendientes y los puntos registrados de una semana. Quedan por probar los premios y la comparación desde ambas cuentas.
+
+Se comprobó en navegador que el premio mensual guardado por una cuenta sigue apareciendo al recargar. Queda pendiente la comprobación desde la segunda cuenta y la comparación completa.
+
+Se confirmó que la segunda cuenta también puede guardar su premio mensual. La comparación completa sigue pendiente de comprobarse en navegador.
+
+Se ejecutaron pruebas con datos ficticios de ambas personas para verificar ganador de cada lado, empate, cierre faltante y cierre desactualizado. Las pruebas revirtieron sus datos y se confirmó que no quedaron cierres ni metas de prueba en la ventana utilizada. La comparación real desde el navegador se observará durante el uso.

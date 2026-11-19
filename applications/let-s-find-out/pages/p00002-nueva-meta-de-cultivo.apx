@@ -293,6 +293,23 @@ page 2 (
         }
     )
 
+    process verificar-semana-abierta (
+        name: Verificar semana abierta
+        type: executeCode
+        source {
+            plsqlCode:
+                ```plsql
+                lfo_edicion_fecha.verificar_semana(to_date(:P2_SEMANA_INICIO,'FXYYYY-MM-DD'));
+                ```
+        }
+        execution {
+            sequence: 5
+            point: processing
+        }
+        serverSideCondition {
+            whenButtonPressed: @create
+        }
+    )
     process process-form-nueva-meta-de-cultivo (
         name: Process form Nueva meta de cultivo
         type: formAutoRowProcessing

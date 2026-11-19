@@ -277,6 +277,23 @@ list navigation-menu (
         }
     )
 
+    entry recuento-mensual (
+        label: Recuento mensual
+        icon {
+            imageIconCssClasses: fa-calendar
+        }
+        layout {
+            sequence: 30
+            parentEntry: @resultados
+        }
+        link {
+            target: {
+                page: 16
+                clearCache: 16
+            }
+        }
+    )
+
     entry colores (
         label: Colores
         icon {
